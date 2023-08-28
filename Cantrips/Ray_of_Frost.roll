@@ -5,16 +5,21 @@
   --#title|Ray of Frost
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageDice|1d10
+  --&AttackModifierType|[INT]
+  --=ProficiencyBonus|@{selected|pb}
+  --=DamageDice|1d8
+  --=CritDice|1d8
   --&DamageType|cold
   --&DamageFX|beam-frost
   --&MarkerA|tread
-  --&SpellText|A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
+  --&Description|A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
   --=Damage|0
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -31,22 +36,23 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Attack|[$AttackRoll] + [$AttackModifier] [MOD] + @{selected|pb} [PROF]
-  --+Attack Roll|[$Attack] = [$AttackRoll] + [$AttackModifier.raw] + @{selected|pb}
+  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
+  --+|Attack Roll:[$Attack], Base: [$AttackRoll]
+  --+|[br]
   --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
   --?[$Attack.Total] -ge [$TargetAC]|Hit
   --?[$Attack.Total] -lt [$TargetAC]|Miss
   --<|
 
   --:Crit|
-  --=Damage|[$DamageDice] + [$DamageDice] [CRIT]
-  --+[#f00]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$FeatDamage] [&FeatDamageType]
+  --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   -->ApplyStatusMarker|
   --<|
   
   --:Hit|
-  --=Damage|[$DamageDice]
+  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
   --+Hit| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   -->ApplyStatusMarker|
@@ -54,7 +60,7 @@
 
   --:Miss|
   --=Damage|0
-  --+|[f18]The attack [#f00]missed[/#]![/f]
+  --+|[f18]The attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
@@ -66,19 +72,19 @@
   --:ApplyResistance|
   --=Resistance|[$Damage] \ 2
   --+|[hr]
-  --+|The creature seems [#f00]resistant[/#] to [&DamageType] damage!
+  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
   --=Immunity|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#f00]immune[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
   --=Vulnerability|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#0f0]vulnerable[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
   --<|
   
   --:PlayEffects|
@@ -95,7 +101,7 @@
   
   --:OutputTxt|
   --+|[hr]
-  --+|[f11][&SpellText][/f]
+  --+|[f11][&Description][/f]
   --<|
   
   --:ApplyDamage|

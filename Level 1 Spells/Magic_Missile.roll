@@ -4,34 +4,74 @@
   --#overridetemplate|wizard
   --#title|Magic Missile
   --=DamageDice|1d4+1
+  --&DamageType|force
+  --&DamageFX|beam-magic
   --&SpellText|You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
-  --&VisualFX|beam-magic
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+
+  --/| Optional Damage modifier i.e Agonizing Blast, Elemental Affinity, Etc.
+  --=DamageModifier|0
 
   --/|*******************Main************************
-  -->FireMissile|
-  -->PlayVFX|
-  -->ApplyDamageTokenmod|@{target|token_id};1;-[$DamageDice]
+  -->MakeAttack|
+  -->PlayEffects|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->OutputTxt|
   --X|
 
   --/|****************Subroutines********************
-  --:FireMissile|
-  --+Missile|Hits for [$DamageDice] [b]force[/b] damage
+  --:MakeAttack|
+  --=Damage|[$DamageDice] + [$DamageModifier] [MOD]
+  --+Hit| for [$Damage] [&DamageType] damage!
+  -->CheckResistances|
   --<|
   
-  --:PlayVFX|
-  --vbetweentokens|@{selected|token_id} @{target|token_id} [&VisualFX]
+  --:CheckResistances|
+  --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+  --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+  --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+    --:ApplyResistance|
+  --=Resistance|[$Damage] \ 2
+  --+|[hr]
+  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
   --<|
   
-  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
-  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --:ApplyImmunity|
+  --=Immunity|[$Damage]
+  --+|[hr]
+  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+  --=Vulnerability|[$Damage]
+  --+|[hr]
+  --+ |The creature seems to be [#ff0000]vulnerable[/#] to [&DamageType] damage!
+  --<|
+
+  --:PlayEffects|
+  --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+  --<|
+
+  --:CalculateDamage|
+  --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
   
   --:OutputTxt|
   --+|[hr]
   --+|[f11][&SpellText][/f]
+  --<|
+
+  --:ApplyDamage|
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 }}

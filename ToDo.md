@@ -1,6 +1,6 @@
 **Misc**
 Optional Magic Weapon Bonus
-Optional Add Flat Damage or Damage Dice
+~~Optional Add Flat Damage or Damage Dice~~
 
 **Species Traits**
 Draconic Ancestry Breath Weapon

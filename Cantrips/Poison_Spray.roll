@@ -3,16 +3,19 @@
   --/|****************Declarations*******************
   --#overridetemplate|wizard
   --#title|Poison Spray
+  --&SaveType|Constitution
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --&NPCSaveMod|@{target|constitution_mod}
   --=DamageDice|1d12
   --&DamageType|poison
-  --&SaveType|Constitution
-  --&NPCSaveMod|@{target|constitution_mod}
   --&DamageFX|beam-slime
-  --&SpellText|You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm. The creature must succeed on a Constitution saving throw or take 1d12 poison damage. This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th level (4d12).
+  --&Description|You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm. The creature must succeed on a Constitution saving throw or take 1d12 poison damage. This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th level (4d12).
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=Damage|0
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -28,23 +31,21 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Save|1d20 + &NPCSaveMod
-  --*Save|[$Save]
-  --?[$Save] -lt @{selected|spell_save_dc}|Hit
-  --?[$Save] -ge @{selected|spell_save_dc}|Miss
+  --=Save|1d20 + [$NPCSaveMod]
+  --*|@{target|token_name} [&SaveType] Save [$Save]
+  --?[$Save] -lt [$SpellSaveDC]|Hit
+  --?[$Save] -ge [$SpellSaveDC]|Miss
   --<|
 
   --:Hit|
-  --=Damage|[$DamageDice]
-  --+|The creature failed the DC @{selected|spell_save_dc} [&SaveType] save!
-  --+Hit| for [$Damage] [&DamageType] damage!
+  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+  --+|The creature failed the DC [$SpellSaveDC] [&SaveType] save, taking [$Damage] [&DamageType] damage!
   -->CheckResistances|
   --<|
 
   --:Miss|
   --=Damage|0
-  --+|The creature succeeded on the DC @{selected|spell_save_dc} save!
-  --+|[f18]The attack [#f00]missed[/#]![/f]
+  --+|The creature succeeded on the DC [$SpellSaveDC] [&SaveType] save, taking [roll]0[/roll] damage!
   --<|
 
   --:CheckResistances|
@@ -56,19 +57,19 @@
   --:ApplyResistance|
   --=Resistance|[$Damage] \ 2
   --+|[hr]
-  --+|The creature seems [#f00]resistant[/#] to [&DamageType] damage!
+  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
   --=Immunity|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#f00]immune[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
   --=Vulnerability|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#0f0]vulnerable[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
   --<|
   
   --:PlayEffects|
@@ -81,10 +82,10 @@
   
   --:OutputTxt|
   --+|[hr]
-  --+|[f11][&SpellText][/f]
+  --+|[f11][&Description][/f]
   --<|
   
-  --:ApplyDamage|Parameters are tokenid;bar#;amount
+  --:ApplyDamage|
   --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 }}

@@ -2,15 +2,16 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Eldritch Blast
+  --#title|club
   --=CritRoll|20
-  --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|[WIS]
+  --=AttackModifier|@{selected|strength_mod}
+  --&AttackModifierType|[STR]
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|1d10
-  --&DamageType|force
-  --&DamageFX|beam-charm
-  --&Description|A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 force damage. The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th level. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam.
+  --=MagicWeaponBonus|0
+  --=DamageDice|1d4
+  --=CritDice|1d4
+  --&DamageType|bludgeoning
+  --&Description|The powerful swing of a club to bludgeon the target.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -18,6 +19,7 @@
   --=Damage|0
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
+  --=DuelBonus|0
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -26,7 +28,6 @@
 
   --/|*******************Main************************
   -->MakeAttack|
-  -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->OutputTxt|
@@ -34,7 +35,7 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
+  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]  + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
   --+|Attack Roll:[$Attack], Base: [$AttackRoll]
   --+|[br]
   --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -43,13 +44,13 @@
   --<|
 
   --:Crit|
-  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$FeatDamage] [&FeatDamageType]
+  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$AttackModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [$MagicWeaponBonus] [MAGIC]
   --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   --<|
   
   --:Hit|
-  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+  --=Damage|[$DamageDice] + [$AttackModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [&MagicWeaponBonus] [MAGIC]
   --+Hit| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   --<|
@@ -81,10 +82,6 @@
   --=Vulnerability|[$Damage]
   --+|[hr]
   --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
-  --<|
-  
-  --:PlayEffects|
-  --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|

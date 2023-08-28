@@ -4,16 +4,21 @@
   --#overridetemplate|wizard
   --#title|Firebolt
   --=CritRoll|20
-  --=AttackModifier|@{selected|intelligence_mod}
+  --=AttackModifier|@{selected|spellcasting_ability}
+  --&AttackModifierType|[INT]
+  --=ProficiencyBonus|@{selected|pb}
   --=DamageDice|1d10
+  --=CritDice|1d10
   --&DamageType|fire
   --&DamageFX|beam-fire
-  --&SpellText|You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn’t being worn or carried. This spell’s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).
+  --&Description|You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn’t being worn or carried. This spell’s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
   --=Damage|0
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -30,28 +35,29 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Attack|[$AttackRoll] + [$AttackModifier] [MOD] + @{selected|pb} [PROF]
-  --+Attack Roll|[$Attack] = [$AttackRoll] + [$AttackModifier.raw] + @{selected|pb}
+  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
+  --+|Attack Roll:[$Attack], Base: [$AttackRoll]
+  --+|[br]
   --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
   --?[$Attack.Total] -ge [$TargetAC]|Hit
   --?[$Attack.Total] -lt [$TargetAC]|Miss
   --<|
 
   --:Crit|
-  --=Damage|[$DamageDice] + [$DamageDice] [CRIT]
-  --+[#f00]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$FeatDamage] [&FeatDamageType]
+  --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   --<|
   
   --:Hit|
-  --=Damage|[$DamageDice]
+  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
   --+Hit| for [$Damage] [&DamageType] damage!
   -->CheckResistances|
   --<|
 
   --:Miss|
   --=Damage|0
-  --+|[f18]The attack [#f00]missed[/#]![/f]
+  --+|[f18]The attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
@@ -63,19 +69,19 @@
   --:ApplyResistance|
   --=Resistance|[$Damage] \ 2
   --+|[hr]
-  --+|The creature seems [#f00]resistant[/#] to [&DamageType] damage!
+  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
   --=Immunity|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#f00]immune[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
   --=Vulnerability|[$Damage]
   --+|[hr]
-  --+ |The creature seems to be [#0f0]vulnerable[/#] to [&DamageType] damage!
+  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
   --<|
   
   --:PlayEffects|
@@ -88,7 +94,7 @@
   
   --:OutputTxt|
   --+|[hr]
-  --+|[f11][&SpellText][/f]
+  --+|[f11][&Description][/f]
   --<|
   
   --:ApplyDamage|

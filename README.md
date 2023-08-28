@@ -9,7 +9,7 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 
 **Requirements:**
 -You must have a Roll20 Pro Account.
--Install both the Scriptcards API and the TokenMod API into your game in the API MOD Menu.
+-Install the Following APIs into your game in the API MOD Menu: Scriptcards, TokenMod and Supernotes.
 
 **Usage**
 -I recommend adding these Macros as Token Actions on a Player's Character Sheet, in the Attributes & Abilities Section, under Abilities.
