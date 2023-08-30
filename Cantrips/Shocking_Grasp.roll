@@ -1,7 +1,7 @@
 !scriptcard  {{
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Ray of Frost
+  --#title|Shocking Grasp
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
   --=DamageModifier|0
@@ -11,10 +11,9 @@
   --=ProficiencyBonus|@{selected|pb}
   --=DamageDice|1d8
   --=CritDice|1d8
-  --&DamageType|cold
-  --&DamageFX|beam-frost
-  --&MarkerA|tread
-  --&Description|A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
+  --&DamageType|lightning
+  --&DamageFX|glow-frost
+  --&Description|Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have advantage on the attack roll if the target is wearing armor made of metal. On a hit, the target takes 1d8 lightning damage, and it cant take reactions until the start of its next turn. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
   
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
@@ -50,14 +49,12 @@
     --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
     --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
   
   --:Hit|
     --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
     --+Hit| for [$Damage] [&DamageType] damage!
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
 
   --:Miss|
@@ -87,11 +84,7 @@
   --<|
   
   --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-  --<|
-  
-  --:ApplyStatusMarker|
-    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|

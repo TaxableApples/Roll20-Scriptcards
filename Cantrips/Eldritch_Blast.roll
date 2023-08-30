@@ -1,23 +1,26 @@
 !scriptcard  {{
-
-  --/|****************Declarations*******************
+  --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Eldritch Blast
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
+  --=DamageModifier|0
   --&AttackModifierType|[WIS]
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
   --=DamageDice|1d10
+  --=CritDice|1d10
   --&DamageType|force
   --&DamageFX|beam-charm
   --&Description|A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 force damage. The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th level. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam.
+  
+  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
   --=Damage|0
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -34,69 +37,66 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-  --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-  --+|[br]
-  --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-  --?[$Attack.Total] -ge [$TargetAC]|Hit
-  --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
+    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
+    --+|[br]
+    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
+    --?[$Attack.Total] -ge [$TargetAC]|Hit
+    --?[$Attack.Total] -lt [$TargetAC]|Miss
   --<|
 
   --:Crit|
-  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$FeatDamage] [&FeatDamageType]
-  --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
-  -->CheckResistances|
+    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
+    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    -->CheckResistances|
   --<|
   
   --:Hit|
-  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
-  --+Hit| for [$Damage] [&DamageType] damage!
-  -->CheckResistances|
+    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
+    --+Hit| for [$Damage] [&DamageType] damage!
+    -->CheckResistances|
   --<|
 
   --:Miss|
-  --=Damage|0
-  --+|[f18]The attack [#ff0000]missed[/#]![/f]
+    --=Damage|0
+    --+|[f18]The attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
-  --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
-  --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
-  --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
   --<|
     
   --:ApplyResistance|
-  --=Resistance|[$Damage] \ 2
-  --+|[hr]
-  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
-  --=Immunity|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
-  --=Vulnerability|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
   --<|
   
   --:PlayEffects|
-  --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
-  --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
   
   --:OutputTxt|
-  --+|[hr]
-  --+|[f11][&Description][/f]
+    --+|[hr]
+    --+|[f11][&Description][/f]
   --<|
   
   --:ApplyDamage|
-  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 }}

@@ -1,0 +1,118 @@
+!scriptcard {{
+    --/|**********Customizable Variables***************
+    --#overridetemplate|wizard
+    --#title|Thunder Wave
+    --&SpellRadius|3
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|constitution
+    --=FeatDamage|0
+    --&FeatDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|1,2d8|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
+    --&DamageType|thunder
+    --&DamageFX|nova-smoke
+    --&Description|A wave of thunderous force sweeps out from you. Each creature in a 15-foot cube originating from you must make a Constitution saving throw. On a failed save, a creature takes 2d8 thunder damage and is pushed 10 feet away from you. On a successful save, the creature takes half as much damage and isnt pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from you by the spells effect, and the spell emits a thunderous boom audible out to 300 feet. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d8 for each slot level above 1st.
+
+    --/|****************DO NOT CHANGE******************
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --&CasterToken|@{selected|token_id}
+    --~|array;pagetokens;AllTokens;[&CasterToken]
+    --=TargetDistance|0
+    --&TargetAngle|0
+    --=TargetSave|0
+    --=Damage|0
+    --=Resistance|0
+    --=Immunity|0
+    --=Vulnerability|0
+    --=TotalDamage|0
+
+    --/|*******************Main************************
+    -->OutputSpellDC|
+    -->RollDamage|
+    --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq [&CasterToken]|%
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        -->GetTargetAngle|[&CurrentToken]
+        --?[$TargetDistance] -gt [&SpellRadius]|%   
+        -->MakeSavingThrow|[&CurrentToken]
+        --?[$TargetSave] -ge [$SpellSaveDC]|>Miss
+        --?[$TargetSave] -lt [$SpellSaveDC]|>Hit;[&CurrentToken]        
+        --?"[*[&CurrentToken]:npc_resistances]" -inc [&DamageType]|>ApplyResistance
+        --?"[*[&CurrentToken]:npc_immunities]" -inc [&DamageType]|>ApplyImmunity
+        --?"[*[&CurrentToken]:npc_vulnerabilities]" -inc [&DamageType]|>ApplyVulnerability
+        -->CalculateDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+    --%|
+    -->PlayEffects|
+    -->OutputTxt|
+    --X|
+
+    --/|****************Subroutines********************
+    --:OutputSpellDC|
+        --+DC|[$SpellSaveDC] [&SpellSaveType] Saving Throw
+    --<|
+
+    --:RollDamage|
+        --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+        --+Damage Roll|[$Damage]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SaveType] Save [$TargetSave]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{selected|token_id};[%1%]
+    --<|
+
+    --:GetTargetAngle|
+        --~TargetAngle|math;angle;@{selected|token_id};[%1%]
+    --<|
+ 
+    --:ApplyResistance|
+        --=Resistance|[$Damage] \ 2
+        --*|Creature is resistant to [&DamageType] damage!
+    --<|
+    
+    --:ApplyImmunity|
+        --=Immunity|[$Damage]
+        --*|Creature is immune to [&DamageType] damage!
+    --<|
+    
+    --:ApplyVulnerability|
+        --=Vulnerability|[$Damage]
+        --*|Creature is vulnerable to [&DamageType] damage!
+    --<|
+
+    --:Hit|
+        --*|Fails!
+        --@token-mod|_ignore-selected _ids [%1%] _move =[&TargetAngle]|2g
+    --<|
+
+    --:Miss|
+        --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType] \ 2
+        --*|Succeeds!
+    --<|
+
+    --:PlayEffects|
+        --vtoken|@{selected|token_id} [&DamageFX]
+    --<|    
+
+    --:CalculateDamage|
+        --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+        --*|Taking [$TotalDamage] Damage!
+    --<|
+    
+    --:OutputTxt|
+        --+|[hr]
+        --+|[f11][&Description][/f]
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+}}

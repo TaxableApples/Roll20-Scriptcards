@@ -1,7 +1,8 @@
 !scriptcard  {{
+
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Ray of Frost
+  --#title|Inflict Wounds
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
   --=DamageModifier|0
@@ -9,13 +10,12 @@
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|1d8
-  --=CritDice|1d8
-  --&DamageType|cold
-  --&DamageFX|beam-frost
-  --&MarkerA|tread
-  --&Description|A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
-  
+  --=DamageDice|?{Spell Level?|1,3d10|2,4d10|3,5d10|4,6d10|5,7d10|6,8d10|7,9d10|8,10d10|9,11d10}
+  --=CritDice|[$DamageDice.RollText]
+  --&DamageType|necrotic
+  --&DamageFX|bubbling-death
+  --&Description|Make a melee spell attack against a creature you can reach. On a hit, the target takes 3d10 necrotic damage. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d10 for each slot level above 1st.
+
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
@@ -50,14 +50,12 @@
     --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
     --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
   
   --:Hit|
     --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
     --+Hit| for [$Damage] [&DamageType] damage!
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
 
   --:Miss|
@@ -85,24 +83,20 @@
     --=Vulnerability|[$Damage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
-  
+
   --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-  --<|
-  
-  --:ApplyStatusMarker|
-    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-  
+
   --:OutputTxt|
     --+|[hr]
     --+|[f11][&Description][/f]
   --<|
-  
+
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|

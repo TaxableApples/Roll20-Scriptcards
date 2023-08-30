@@ -1,62 +1,5 @@
-**Misc**
-Optional Magic Weapon Bonus
-~~Optional Add Flat Damage or Damage Dice~~
-
-**Species Traits**
+**Species Features**
 Draconic Ancestry Breath Weapon
-
-**Class Features**:
-Rage Damage
-Dueling Fighting Style
-Elemental Affinity
-Two Weapon Fighting (toggle ability modifier)
-Unarmed Strike
-Divine Smite
-Divine Strike
-Sneak Attack
-
-**Simple	Melee	Weapons**
-~~Club~~
-Dagger
-Greatclub
-Handaxe
-Javelin
-Light hammer
-Mace
-Quarterstaff
-Sickle
-Spear
-
-**Simple	Ranged	Weapons**
-Crossbow
-Dart
-Shortbow
-Sling
-
-**Martial	Melee	Weapons**
-Battleaxe
-Flail
-Glaive
-Greataxe
-Greatsword
-Halberd
-Lance
-Longsword
-Maul
-Morningstar
-Pike
-Rapier
-Scimitar
-Shortsword
-Trident
-War	pick
-Warhammer
-Whip
-
-**Martial	Ranged	Weapons**
-Crossbow, hand 1d6 piercing
-Crossbow, heavy 1d10 piercing
-Longbow 1d8 piercing
 
 **Items**
 Alchemist's Fire
@@ -69,9 +12,9 @@ Holy Water
 ~~Fire Bolt~~
 ~~Poison Spray~~
 ~~Ray of Frost~~
-Sacred Flame
-Shocking Grasp
-Vicious Mockery
+~~Sacred Flame~~
+~~Shocking Grasp~~
+~~Vicious Mockery~~
 
 **1st Level Spells**
 Burning Hands
@@ -79,9 +22,9 @@ Divine Favor
 Guiding Bolt
 Hellish Rebuke
 Hunter’s Mark
-Inflict Wounds
+~~Inflict Wounds~~
 ~~Magic Missile~~
-Thunderwave
+~~Thunderwave~~
 
 **2nd Level Spells**
 Acid Arrow

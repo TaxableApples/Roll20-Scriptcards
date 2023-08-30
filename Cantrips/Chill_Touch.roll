@@ -1,11 +1,13 @@
 !scriptcard  {{
-
-  --/|****************Declarations*******************
+  --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Chilltouch
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
+  --=DamageModifier|0
   --&AttackModifierType|[INT]
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
   --=DamageDice|1d8
   --&DamageType|necrotic
@@ -13,13 +15,13 @@
   --&MarkerA|grab
   --&MarkerB|back-pain
   --&Description|You create a ghostly, skeletal hand in the space of a creature within range. Make a ranged spell attack against the creature to assail it with the chill of the grave. On a hit, the target takes 1d8 necrotic damage, and it can't regain hit points until the start of your next turn. Until then, the hand clings to the target. If you hit an undead target, it also has disadvantage on attack rolls against you until the end of your next turn. This spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
+
+  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
   --=Damage|0
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -36,83 +38,79 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-  --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-  --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-  --+|[br]
-  --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-  --?[$Attack.Total] -ge [$TargetAC]|Hit
-  --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
+    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
+    --+|[br]
+    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
+    --?[$Attack.Total] -ge [$TargetAC]|Hit
+    --?[$Attack.Total] -lt [$TargetAC]|Miss
   --<|
 
   --:Crit|
-  --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$FeatDamage] [&FeatDamageType]
-  --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
-  --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
-  -->CheckResistances|
-  -->CheckUndead|
+    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
+    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    -->CheckResistances|
+    -->CheckUndead|
   --<|
   
   --:Hit|
-  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
-  --+Hit| for [$Damage] [&DamageType] damage!
-  --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|grab
-  -->CheckResistances|
-  -->CheckUndead|
+    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
+    --+Hit| for [$Damage] [&DamageType] damage!
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|grab
+    -->CheckResistances|
+    -->CheckUndead|
   --<|
 
   --:Miss|
-  --=Damage|0
-  --+|[f18]The attack [#ff0000]missed[/#]![/f]
+    --=Damage|0
+    --+|[f18]The attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
-  --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
-  --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
-  --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
   --<|
   
   --:ApplyResistance|
-  --=Resistance|[$Damage] \ 2
-  --+|[hr]
-  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
-  --=Immunity|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
-  --=Vulnerability|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
   --<|
 
   --:CheckUndead|
-  --?"@{target|npc_type}" -inc "undead" |ApplyDisadvantage
+    --?"@{target|npc_type}" -inc "undead" |ApplyDisadvantage
   --<|
 
  --:ApplyDisadvantage|
-  --+[hr]
-  --+|[f18]Creature is undead![/f]
-  --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerB]
+    --*|Creature is undead!
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerB]
   --<|
    
   --:PlayEffects|
-  --vtoken|@{target|token_id} [&DamageFX]
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
-  --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
   
   --:OutputTxt|
-  --+|[hr]
-  --+|[f11][&Description][/f]
+    --+|[hr]
+    --+|[f11][&Description][/f]
   --<|
   
   --:ApplyDamage|
-  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 }}

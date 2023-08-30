@@ -1,91 +1,97 @@
 !scriptcard  {{
-
-  --/|****************Declarations*******************
+  --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Poison Spray
   --&SaveType|Constitution
-  --=SpellSaveDC|@{selected|spell_save_dc}
-  --&NPCSaveMod|@{target|constitution_mod}
+  --&SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|constitution_save_bonus}
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
   --=DamageDice|1d12
-  --&DamageType|poison
+  --&DamageType|acid
   --&DamageFX|beam-slime
   --&Description|You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm. The creature must succeed on a Constitution saving throw or take 1d12 poison damage. This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th level (4d12).
+
+  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
+  --=TargetSave|0
   --=Damage|0
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
 
   --/|*******************Main************************
-  -->MakeAttack|
-  -->PlayEffects|
+  -->OutputSpellDC|
+  -->RollDamage|
+  -->MakeSavingThrow|
+  --?[$TargetSave] -ge [&SpellSaveDC]|>Miss
+  --?[$TargetSave] -lt [&SpellSaveDC]|>Hit
+  --?"[*T:npc_resistances]" -inc [&DamageType]|>ApplyResistance
+  --?"[*T:npc_immunities]" -inc [&DamageType]|>ApplyImmunity
+  --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>ApplyVulnerability
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
   -->OutputTxt|
   --X|
   
   --/|****************Subroutines********************
-  --:MakeAttack|
-  --=Save|1d20 + [$NPCSaveMod]
-  --*|@{target|token_name} [&SaveType] Save [$Save]
-  --?[$Save] -lt [$SpellSaveDC]|Hit
-  --?[$Save] -ge [$SpellSaveDC]|Miss
+  --:OutputSpellDC|
+    --+DC|[&SpellSaveDC] [&SpellSaveType] Saving Throw
   --<|
 
-  --:Hit|
-  --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
-  --+|The creature failed the DC [$SpellSaveDC] [&SaveType] save, taking [$Damage] [&DamageType] damage!
-  -->CheckResistances|
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    --+Damage Roll|[$Damage]
   --<|
 
-  --:Miss|
-  --=Damage|0
-  --+|The creature succeeded on the DC [$SpellSaveDC] [&SaveType] save, taking [roll]0[/roll] damage!
-  --<|
-
-  --:CheckResistances|
-  --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
-  --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
-  --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --:MakeSavingThrow|
+    --=TargetSave|1d20 + [$NPCSaveMod]
+    --*|@{target|token_name} [&SaveType] Save [$Save]
   --<|
     
   --:ApplyResistance|
-  --=Resistance|[$Damage] \ 2
-  --+|[hr]
-  --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
-  --=Immunity|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
-  --=Vulnerability|[$Damage]
-  --+|[hr]
-  --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:Hit|
+    --*|Fails!
+  --<|
+
+  --:Miss|
+    --=Damage|0
+    --*|Succeeds!
   --<|
   
   --:PlayEffects|
-  --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --vbetweentokens|@{selected|token_id} @{target|token_id}[&DamageFX]
   --<|
   
   --:CalculateDamage|
-  --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --*|Taking [$TotalDamage] Damage!
   --<|
   
   --:OutputTxt|
-  --+|[hr]
-  --+|[f11][&Description][/f]
+    --+|[hr]
+    --+|[f11][&Description][/f]
   --<|
   
   --:ApplyDamage|
-  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 }}

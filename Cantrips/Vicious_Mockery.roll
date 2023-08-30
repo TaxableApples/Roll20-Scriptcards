@@ -1,16 +1,17 @@
 !scriptcard  {{
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Acid Splash
-  --&SaveType|Dexterity
+  --#title|Vicious Mockery
+  --&SaveType|Wisdom
   --&SpellSaveDC|@{selected|spell_save_dc}
-  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=NPCSaveMod|@{target|wisdom_save_bonus}
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
-  --=DamageDice|1d6
-  --&DamageType|acid
-  --&DamageFX|bomb-acid
-  --&Description|You hurl a bubble of acid. Choose one creature within range, or choose two creatures within range that are within 5 feet of each other. A target must succeed on a Dexterity saving throw or take 1d6 acid damage. This spells damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).
+  --=DamageDice|1d4
+  --&DamageType|psychic
+  --&DamageFX|burn-charm
+  --&StatusMarker|back-pain
+  --&Description|You unleash a string of insults laced with subtle enchantments at a creature you can see within range. If the target can hear you (though it need not understand you), it must succeed on a Wisdom saving throw or take 1d4 psychic damage and have disadvantage on the next attack roll it makes before the end of its next turn. This spells damage increases by 1d4 when you reach 5th level (2d4), 11th level (3d4), and 17th level (4d4).
 
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
@@ -70,6 +71,7 @@
 
   --:Hit|
     --*|Fails!
+    -->ApplyStatusMarker|
   --<|
 
   --:Miss|
@@ -78,7 +80,11 @@
   --<|
   
   --:PlayEffects|
-    --vtoken|@{target|token_id}[&DamageFX]
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:ApplyStatusMarker|
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&StatusMarker]
   --<|
   
   --:CalculateDamage|
