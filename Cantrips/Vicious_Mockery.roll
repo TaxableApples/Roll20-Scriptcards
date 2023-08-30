@@ -51,7 +51,7 @@
 
   --:MakeSavingThrow|
     --=TargetSave|1d20 + [$NPCSaveMod]
-    --*|@{target|token_name} [&SaveType] Save [$Save]
+    --*|@{target|token_name} [&SaveType] Save [$TargetSave]
   --<|
     
   --:ApplyResistance|

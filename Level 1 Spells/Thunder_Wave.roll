@@ -4,7 +4,7 @@
     --#title|Thunder Wave
     --&SpellRadius|3
     --=SpellSaveDC|@{selected|spell_save_dc}
-    --&SpellSaveType|constitution
+    --&SpellSaveType|Constitution
     --=FeatDamage|0
     --&FeatDamageType|[FEAT]
     --=DamageDice|?{Spell Level?|1,2d8|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
@@ -52,7 +52,7 @@
 
     --/|****************Subroutines********************
     --:OutputSpellDC|
-        --+DC|[$SpellSaveDC] [&SpellSaveType] Saving Throw
+        --+DC|[&SpellSaveDC] [&SpellSaveType] Saving Throw
     --<|
 
     --:RollDamage|
@@ -62,7 +62,7 @@
 
     --:MakeSavingThrow|
         --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
-        --*[*[%1%]:character_name]|[&SaveType] Save [$TargetSave]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
     --<|
 
     --:GetTargetDistance|

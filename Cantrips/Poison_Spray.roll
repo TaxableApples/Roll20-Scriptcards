@@ -2,13 +2,13 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Poison Spray
-  --&SaveType|Constitution
+  --&SpellSaveType|Constitution
   --&SpellSaveDC|@{selected|spell_save_dc}
   --=NPCSaveMod|@{target|constitution_save_bonus}
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
   --=DamageDice|1d12
-  --&DamageType|acid
+  --&DamageType|poison
   --&DamageFX|beam-slime
   --&Description|You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm. The creature must succeed on a Constitution saving throw or take 1d12 poison damage. This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th level (4d12).
 
@@ -50,7 +50,7 @@
 
   --:MakeSavingThrow|
     --=TargetSave|1d20 + [$NPCSaveMod]
-    --*|@{target|token_name} [&SaveType] Save [$Save]
+    --*|@{target|token_name} [&SpellSaveType] Save [$TargetSave]
   --<|
     
   --:ApplyResistance|
@@ -78,7 +78,7 @@
   --<|
   
   --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id}[&DamageFX]
+    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|

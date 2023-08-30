@@ -2,7 +2,7 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Acid Splash
-  --&SaveType|Dexterity
+  --&SpellSaveType|Dexterity
   --&SpellSaveDC|@{selected|spell_save_dc}
   --=NPCSaveMod|@{target|dexterity_save_bonus}
   --=FeatDamage|0
@@ -40,7 +40,7 @@
   
   --/|****************Subroutines********************
   --:OutputSpellDC|
-    --+DC|[&SpellSaveDC] [&SpellSaveType] Saving Throw
+    --+DC|[&SpellSaveDC] [&SaveType] Saving Throw
   --<|
 
   --:RollDamage|
@@ -50,7 +50,7 @@
 
   --:MakeSavingThrow|
     --=TargetSave|1d20 + [$NPCSaveMod]
-    --*|@{target|token_name} [&SaveType] Save [$Save]
+    --*|@{target|token_name} [&SpellSaveType] Save [$TargetSave]
   --<|
     
   --:ApplyResistance|
@@ -78,7 +78,7 @@
   --<|
   
   --:PlayEffects|
-    --vtoken|@{target|token_id}[&DamageFX]
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
