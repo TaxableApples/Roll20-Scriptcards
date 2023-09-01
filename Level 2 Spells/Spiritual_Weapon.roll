@@ -1,20 +1,22 @@
 !scriptcard  {{
+  --/| Note: This macro just covers the weapon attack and damage.
+
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Guiding Bolt
+  --#title|Spiritual Weapon
   --=CritRoll|20
+  --&AttackModifierType|INT
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[WIS]
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
+  --&FeatDamageType|INT
+  --=FeatDamage|@{selected|spellcasting_ability}
+  --=CritFeatDamage|0
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|?{Spell Level?|1,4d6|2,5d6|3,6d6|4,7d6|5,8d6|6,9d6|7,10d6|8,11d6|9,12d6}
+  --&DamageType|force
+  --&DamageFX|burn-smoke
+  --=DamageDice|?{Spell Level?|2,1d8|3,2d8|4,3d8|5,4d8|6,5d8|7,6d8|8,7d8|9,8d8}
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|radiant
-  --&DamageFX|beam-holy
-  --&Description|A flash of light streaks toward a creature of your choice within range. Make a ranged spell attack against the target. On a hit, the target takes 4d6 radiant damage, and the next attack roll made against this target before the end of your next turn has advantage, thanks to the mystical dim light glittering on the target until then. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d6 for each slot level above 1st.
-
+  --&Description|You create a floating, spectral weapon within range that lasts for the duration or until you cast this spell again. When you cast the spell, you can make a melee spell attack against a creature within 5 feet of the weapon. On a hit, the target takes force damage equal to 1d8 + your spellcasting ability modifier. As a bonus action on your turn, you can move the weapon up to 20 feet and repeat the attack against a creature within 5 feet of it. The weapon can take whatever form you choose. Clerics of deities who are associated with a particular weapon (as St. Cuthbert is known for his mace and Thor for his hammer) make this spell’s effect resemble that weapon. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for every two slot levels above 2nd.
+  
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
@@ -54,7 +56,6 @@
     --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
     --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
-    -->ApplyStatus|
   --<|
   
   --:Hit|
@@ -63,14 +64,13 @@
     --?[$FeatDamage] -ne 0|>ShowDamageBonus
     --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
-    -->ApplyStatus|@{target|token_id}
   --<|
 
   --:ShowDamageBonus|
     --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
     --+Damage Bonus|[$DamageBonuses]
   --<|
-  
+
   --:ShowCriticalDamageBonus|
     --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
     --+Damage Bonus|[$DamageBonuses]
@@ -101,23 +101,19 @@
     --=Vulnerability|[$Damage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
-
+  
   --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-  --<|
-
-  --:ApplyStatus|
-    --@token-mod|_ignore-selected _ids [%1%] _set emits_bright_light|on bright_light_distance|5 lightColor#ffd700|Goldenrod
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-
+  
   --:OutputTxt|
     --+|[f11][&Description][/f]
   --<|
-
+  
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|

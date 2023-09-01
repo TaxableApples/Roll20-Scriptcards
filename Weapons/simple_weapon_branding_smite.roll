@@ -2,19 +2,20 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Dagger
+  --#title|Mace
   --=CritRoll|20
-  --=AttackModifier|@{selected|dexterity_mod}
-  --=DamageModifier|@{selected|dexterity_mod}
-  --&AttackModifierType|[DEX]
+  --=AttackModifier|@{selected|strength_mod}
+  --=DamageModifier|@{selected|strength_mod}
+  --&AttackModifierType|[STR]
   --=ProficiencyBonus|@{selected|pb}
   --=MagicWeaponBonus|0
-  --=DamageDice|1d4
-  --=CritDice|1d4
+  --=DamageDice|1d6
+  --=CritDice|1d6
   --&DamageType|piercing
-  --&FeatDamageType|Sneak Attack
-  --=FeatDamage|?{Sneak Attack|Yes,1d6|No,0}
+  --&FeatDamageType|Branding Smite
+  --=FeatDamage|?{Branding Smite|Yes,2d6|No,0}
   --=CritFeatDamage|[$FeatDamage.RollText]
+  --&FeatDamageFX|burn-holy
   
   --=DuelBonus|0
   --/|****************DO NOT CHANGE******************
@@ -68,10 +69,12 @@
 
   --:ShowFeatDamage|
     --+[&FeatDamageType]|[$FeatDamage]
+    --vtoken|@{target|token_id} [&FeatDamageFX]
   --<|
 
   --:ShowCritFeatDamage|
     --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+    --vtoken|@{target|token_id} [&FeatDamageFX]
   --<|
 
   --:Miss|

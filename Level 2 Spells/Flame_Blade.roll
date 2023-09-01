@@ -67,12 +67,12 @@
 
     --:ShowDamageBonus|
     --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
-    --+Damage Bonuses|[$DamageBonuses]
+    --+Damage Bonus|[$DamageBonuses]
   --<|
   
   --:ShowCriticalDamageBonus|
     --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
-    --+Damage Bonuses|[$DamageBonuses]
+    --+Damage Bonus|[$DamageBonuses]
   --<|
 
   --:Miss|

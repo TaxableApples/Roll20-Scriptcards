@@ -1,4 +1,6 @@
 !scriptcard  {{
+  --/|Note: This is just the save & damage roll.
+
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Flaming Sphere

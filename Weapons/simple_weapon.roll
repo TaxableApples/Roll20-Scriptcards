@@ -50,7 +50,7 @@
     --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
     --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
-    --+Damage Bonuses|[$DamageBonuses]
+    --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
@@ -60,7 +60,7 @@
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [&MagicWeaponBonus]
     --+Damage Roll|[$DamageDice]
     --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
-    --+Damage Bonuses|[$DamageBonuses]
+    --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|

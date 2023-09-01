@@ -27,13 +27,13 @@ Hunter’s Mark
 
 **2nd Level Spells**
 Acid Arrow
-Branding Smite
+~~Branding Smite~~
 ~~Flame Blade~~
 ~~Flaming Sphere~~
 Moonbeam
 ~~Scorching Ray~~
 ~~Shatter~~
-Spiritual Weapon
+~~Spiritual Weapon~~
 
 **3rd Level Spells**
 Call Lightning
