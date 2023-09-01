@@ -18,9 +18,8 @@ Holy Water
 
 **1st Level Spells**
 Burning Hands
-Divine Favor
-Guiding Bolt
-Hellish Rebuke
+~~Guiding Bolt~~
+~~Hellish Rebuke~~
 Hunter’s Mark
 ~~Inflict Wounds~~
 ~~Magic Missile~~
@@ -28,13 +27,12 @@ Hunter’s Mark
 
 **2nd Level Spells**
 Acid Arrow
-Alter Self Natural Weapons
 Branding Smite
-Flame Blade
-Flaming Sphere
+~~Flame Blade~~
+~~Flaming Sphere~~
 Moonbeam
-Scorching Ray
-Shatter
+~~Scorching Ray~~
+~~Shatter~~
 Spiritual Weapon
 
 **3rd Level Spells**

@@ -1,7 +1,7 @@
 !scriptcard  {{
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Inflict Wounds
+  --#title|Scorching Ray
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
   --=DamageModifier|0
@@ -9,12 +9,12 @@
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|?{Spell Level?|1,3d10|2,4d10|3,5d10|4,6d10|5,7d10|6,8d10|7,9d10|8,10d10|9,11d10}
-  --=CritDice|[$DamageDice.RollText]
-  --&DamageType|necrotic
-  --&DamageFX|bubbling-death
-  --&Description|Make a melee spell attack against a creature you can reach. On a hit, the target takes 3d10 necrotic damage. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d10 for each slot level above 1st.
-
+  --=DamageDice|2d6
+  --=CritDice|2d6
+  --&DamageType|fire
+  --&DamageFX|beam-fire
+  --&Description|You create three rays of fire and hurl them at targets within range. You can hurl them at one target or several. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, you create one additional ray for each slot level above 2nd.
+  
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
@@ -82,19 +82,19 @@
     --=Vulnerability|[$Damage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
-
+  
   --:PlayEffects|
-    --vtoken|@{target|token_id} [&DamageFX]
+    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
   --<|
   
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-
+  
   --:OutputTxt|
     --+|[f11][&Description][/f]
   --<|
-
+  
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|

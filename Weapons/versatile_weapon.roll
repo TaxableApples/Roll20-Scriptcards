@@ -12,14 +12,16 @@
   --=DamageDice|?{Attack Type|One Handed,1d6|Two Handed,1d8}
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|bludgeoning
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  
+  --=DuelBonus|0
+  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
-  --=Damage|0
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
-  --=DuelBonus|0
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -30,34 +32,51 @@
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->OutputTxt|
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$DuelBonus] + [$MagicWeaponBonus]
+    --+Attack Roll| [$AttackRoll]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
+    --+Attack Bonus| [$AttackBonus]
+    --+|[f18]Total Attack [$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [$MagicWeaponBonus] [MAGIC]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --+Damage Bonuses|[$DamageBonuses]
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
+    --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [&MagicWeaponBonus] [MAGIC]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [&MagicWeaponBonus]
+    --+Damage Roll|[$DamageDice]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --+Damage Bonuses|[$DamageBonuses]
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
+  --<|
+
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
+  --<|
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
   --<|
 
   --:Miss|
     --=Damage|0
-    --+|[f18]The attack [#ff0000]missed[/#]![/f]
+    --+|[f18]Attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
@@ -68,20 +87,18 @@
     
   --:ApplyResistance|
     --=Resistance|[$Damage] \ 2
-    --+|[hr]
-    --+|The creature seems [#800080]resistant[/#] to [&DamageType] damage!
+    --*|Creature is resistant to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
     --=Immunity|[$Damage]
-    --+|[hr]
-    --+ |The creature seems to be [#800080]immune[/#] to [&DamageType] damage!
+    --*|Creature is immune to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
     --=Vulnerability|[$Damage]
     --+|[hr]
-    --+ |The creature seems to be [#800080]vulnerable[/#] to [&DamageType] damage!
+    --*|Creature is vulnerable to [&DamageType] damage!
   --<|
   
   --:CalculateDamage|

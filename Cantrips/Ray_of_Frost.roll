@@ -33,7 +33,7 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->OutputTxt|
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -99,7 +99,6 @@
   --<|
   
   --:OutputTxt|
-    --+|[hr]
     --+|[f11][&Description][/f]
   --<|
   

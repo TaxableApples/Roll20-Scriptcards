@@ -1,7 +1,7 @@
 !scriptcard  {{
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
-  --#title|Inflict Wounds
+  --#title|Flaming Blade
   --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
   --=DamageModifier|0
@@ -9,11 +9,11 @@
   --=FeatDamage|0
   --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|?{Spell Level?|1,3d10|2,4d10|3,5d10|4,6d10|5,7d10|6,8d10|7,9d10|8,10d10|9,11d10}
+  --=DamageDice|?{Spell Level?|2,3d6|3,3d6|4,4d6|5,4d6|6,5d6|7,5d6|8,6d6|9,6d6}
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|necrotic
-  --&DamageFX|bubbling-death
-  --&Description|Make a melee spell attack against a creature you can reach. On a hit, the target takes 3d10 necrotic damage. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d10 for each slot level above 1st.
+  --&DamageType|fire
+  --&DamageFX|burn-fire
+  --&Description|You evoke a fiery blade in your free hand. The blade is similar in size and shape to a scimitar, and it lasts for the duration. If you let go of the blade, it disappears, but you can evoke the blade again as a bonus action. You can use your action to make a melee spell attack with the fiery blade. On a hit, the target takes 3d6 fire damage. The flaming blade sheds bright light in a 10-foot radius and dim light for an additional 10 feet. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for every two slot levels above 2nd.
 
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
@@ -30,6 +30,7 @@
   --/|*******************Main************************
   -->MakeAttack|
   -->PlayEffects|
+  -->ApplyStatus|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
@@ -85,6 +86,10 @@
 
   --:PlayEffects|
     --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:ApplyStatus|
+    --@token-mod|_ignore-selected _ids @{selected|token_id} _set emits_bright_light|on emits_low_light|on bright_light_distance|5 low_light_distance|5
   --<|
   
   --:CalculateDamage|

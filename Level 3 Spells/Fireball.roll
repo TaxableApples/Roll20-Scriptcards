@@ -1,33 +1,31 @@
 !scriptcard {{
     --/|**********Customizable Variables***************
     --#overridetemplate|wizard
-    --#title|Thunder Wave
-    --&SpellRadius|3
+    --#title|Fireball
+    --&SpellRadius|4
     --=SpellSaveDC|@{selected|spell_save_dc}
     --&SpellSaveType|Constitution
-    --=FeatDamage|0
-    --&FeatDamageType|[FEAT]
-    --=DamageDice|?{Spell Level?|1,2d8|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
-    --&DamageType|thunder
-    --&DamageFX|nova-smoke
-    --&Description|A wave of thunderous force sweeps out from you. Each creature in a 15-foot cube originating from you must make a Constitution saving throw. On a failed save, a creature takes 2d8 thunder damage and is pushed 10 feet away from you. On a successful save, the creature takes half as much damage and isnt pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from you by the spells effect, and the spell emits a thunderous boom audible out to 300 feet. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d8 for each slot level above 1st.
+    --=BonusDamage|0
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|3,8d6|4,9d6|5,10d6|6,11d6|7,12d6|8,13d6|9,14d6}
+    --&DamageType|fire
+    --&DamageFX|beam-fire
+    --&DamageFXB|nova-fire
+    --&Description|A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one. The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
 
     --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
-    --&CasterToken|@{selected|token_id}
-    --~|array;pagetokens;AllTokens;[&CasterToken]
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
 
     --/|*******************Main************************
     -->RollDamage|
     -->OutputText|
     --%CurrentToken|foreach;AllTokens 
-        --?[&CurrentToken] -eq [&CasterToken]|%
         --&CharName|[*[&CurrentToken]:character_name]
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
-        -->GetTargetAngle|[&CurrentToken]
-        --?[$TargetDistance] -gt [&SpellRadius]|%   
+        --?[$TargetDistance] -gt [&SpellRadius]|%
         -->MakeSavingThrow|[&CurrentToken]
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
@@ -37,11 +35,12 @@
         --*|[hr]
     --%|
     -->PlayEffects|
+    -->PlayEffectsB|
     --X|
 
     --/|****************Subroutines********************
     --:RollDamage|
-    --=Damage|[$DamageDice] + [$BonusDamage]
+        --=Damage|[$DamageDice] + [$BonusDamage]
         --=DoubleDamage|[$Damage] * 2
         --=HalfDamage|[$Damage] \ 2
         --=QuarterDamage|[$Damage] \ 4
@@ -60,17 +59,12 @@
     --<|
 
     --:GetTargetDistance|
-        --~TargetDistance|distance;@{selected|token_id};[%1%]
+        --~TargetDistance|distance;@{target|token_id};[%1%]
     --<|
 
     --:MakeSavingThrow|
         --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
         --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
-    --<|
-
-    --:GetTargetAngle|
-        --~TargetAngle|math;angle;@{selected|token_id};[%1%]
-        --~TargetAngleRounded|math;round;[&TargetAngle]
     --<|
 
     --:SetSaveBool|
@@ -79,14 +73,12 @@
 
     --:CaseSaveFails|
         --*|Save Fails!
-        --*|Moved target [$TargetAngleRounded] degrees
-        --@token-mod|_ignore-selected _ids [%1%] _move =[$TargetAngleRounded]|2g
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
         --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
-     
+
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
         -->CalculateDamage|[$HalfDamage];Normal
@@ -110,9 +102,13 @@
     --<|
 
     --:PlayEffects|
-        --vtoken|@{selected|token_id} [&DamageFX]
-    --<|
+        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --<|    
 
+    --:PlayEffectsB|
+        --vtoken|@{target|token_id} [&DamageFXB]
+    --<|  
+    
     --:OutputDescription|
         --+|[f11][&Description][/f]
     --<|  

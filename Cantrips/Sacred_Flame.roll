@@ -2,7 +2,7 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Sacred Flame
-  --&SaveType|Dexterity
+  --&SpellSaveType|Dexterity
   --&SpellSaveDC|@{selected|spell_save_dc}
   --=NPCSaveMod|@{target|dexterity_save_bonus}
   --=FeatDamage|0
@@ -35,7 +35,7 @@
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->PlayEffects|
-  -->OutputTxt|
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -50,7 +50,7 @@
 
   --:MakeSavingThrow|
     --=TargetSave|1d20 + [$NPCSaveMod]
-    --*|@{target|token_name} [&SaveType] Save [$TargetSave]
+    --*|@{target|token_name} [&SpellSaveType] Save [$TargetSave]
   --<|
     
   --:ApplyResistance|
@@ -87,7 +87,6 @@
   --<|
   
   --:OutputTxt|
-    --+|[hr]
     --+|[f11][&Description][/f]
   --<|
   

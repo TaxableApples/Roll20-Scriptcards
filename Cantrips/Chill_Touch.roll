@@ -10,6 +10,7 @@
   --&FeatDamageType|[FEAT]
   --=ProficiencyBonus|@{selected|pb}
   --=DamageDice|1d8
+  --=CritDice|1d8
   --&DamageType|necrotic
   --&DamageFX|burn-death
   --&MarkerA|grab
@@ -33,7 +34,7 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->OutputTxt|
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -93,7 +94,7 @@
   --<|
 
  --:ApplyDisadvantage|
-    --*|Creature is undead!
+    --*|Creature is undead, and has disadvantage until the end of the players next turn!
     --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerB]
   --<|
    
@@ -106,7 +107,6 @@
   --<|
   
   --:OutputTxt|
-    --+|[hr]
     --+|[f11][&Description][/f]
   --<|
   

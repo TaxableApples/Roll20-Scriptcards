@@ -2,7 +2,7 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Vicious Mockery
-  --&SaveType|Wisdom
+  --&SpellSaveType|Wisdom
   --&SpellSaveDC|@{selected|spell_save_dc}
   --=NPCSaveMod|@{target|wisdom_save_bonus}
   --=FeatDamage|0
@@ -36,7 +36,7 @@
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->PlayEffects|
-  -->OutputTxt|
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -51,7 +51,7 @@
 
   --:MakeSavingThrow|
     --=TargetSave|1d20 + [$NPCSaveMod]
-    --*|@{target|token_name} [&SaveType] Save [$TargetSave]
+    --*|@{target|token_name} [&SpellSaveType] Save [$TargetSave]
   --<|
     
   --:ApplyResistance|
@@ -70,7 +70,7 @@
   --<|
 
   --:Hit|
-    --*|Fails!
+    --*|Fails and has disadvantage on its next attack roll!
     -->ApplyStatusMarker|
   --<|
 
@@ -93,7 +93,6 @@
   --<|
   
   --:OutputTxt|
-    --+|[hr]
     --+|[f11][&Description][/f]
   --<|
   

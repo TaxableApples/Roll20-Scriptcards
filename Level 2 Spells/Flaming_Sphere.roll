@@ -1,0 +1,99 @@
+!scriptcard  {{
+  --/|**********Customizable Variables***************
+  --#overridetemplate|wizard
+  --#title|Flaming Sphere
+  --&SpellSaveType|Dexterity
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=BonusDamage|0
+  --&BonusDamageType|[FEAT]
+  --=DamageDice|?{Spell Level?|2,2d6|3,3d6|4,4d6|5,5d6|6,6d6|7,7d6|8,8d6|9,9d6}
+  --&DamageType|fire
+  --&DamageFX|burn-fire
+  --&Description|A 5-foot-diameter sphere of fire appears in an unoccupied space of your choice within range and lasts for the duration. Any creature that ends its turn within 5 feet of the sphere must make a Dexterity saving throw. The creature takes 2d6 fire damage on a failed save, or half as much damage on a successful one. As a bonus action, you can move the sphere up to 30 feet. If you ram the sphere into a creature, that creature must make the saving throw against the spheres damage, and the sphere stops moving this turn. When you move the sphere, you can direct it over barriers up to 5 feet tall and jump it across pits up to 10 feet wide. The sphere ignites flammable objects not being worn or carried, and it sheds bright light in a 20-foot radius and dim light for an additional 20 feet. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d6 for each slot level above 2nd.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->OutputText|
+  -->RollDamage|
+  -->MakeSavingThrow|
+  --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+  --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
+  --X|
+  
+  --/|****************Subroutines********************
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+    --=DoubleDamage|[$Damage] * 2
+    --=HalfDamage|[$Damage] \ 2
+    --=QuarterDamage|[$Damage] \ 4
+  --<|
+
+  --:OutputText|
+    --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+    --+Damage Roll|[$DamageDice]
+    --?[$BonusDamage] -ne 0|>OutputBonusDamage
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
+  --<|
+
+  --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|1d20 + [$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+  
+
+  --:CaseSaveFails|
+      --*|Save Fails!
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CaseSaveSucceeds|
+      --*|Save Suceeds!
+      -->CalculateDamage|[$HalfDamage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+  --:ReportDamage|
+        --*|Resistance: [&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+  --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+  
+  --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<| 
+}}

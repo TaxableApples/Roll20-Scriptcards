@@ -1,34 +1,33 @@
 !scriptcard {{
+    --/| There isn't anything to use from the character sheet that indicates if the targets are made of inorganic material, so I simply applied the disadvantage on elementals and constructs. An alternative idea would be to create an array of specific inorganic creature names that will be included in your campaign, and then check if the targets name exists in that array. This version works well enough for my use case.
+
     --/|**********Customizable Variables***************
     --#overridetemplate|wizard
-    --#title|Thunder Wave
-    --&SpellRadius|3
+    --#title|Shatter
+    --&SpellRadius|2
     --=SpellSaveDC|@{selected|spell_save_dc}
     --&SpellSaveType|Constitution
-    --=FeatDamage|0
-    --&FeatDamageType|[FEAT]
-    --=DamageDice|?{Spell Level?|1,2d8|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
+    --=BonusDamage|0
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
     --&DamageType|thunder
     --&DamageFX|nova-smoke
-    --&Description|A wave of thunderous force sweeps out from you. Each creature in a 15-foot cube originating from you must make a Constitution saving throw. On a failed save, a creature takes 2d8 thunder damage and is pushed 10 feet away from you. On a successful save, the creature takes half as much damage and isnt pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from you by the spells effect, and the spell emits a thunderous boom audible out to 300 feet. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d8 for each slot level above 1st.
+    --&Description|A sudden loud ringing noise, painfully intense, erupts from a point of your choice within range. Each creature in a 10-foot-radius sphere centered on that point must make a Constitution saving throw. A creature takes 3d8 thunder damage on a failed save, or half as much damage on a successful one. A creature made of inorganic material such as stone, crystal, or metal has disadvantage on this saving throw. A nonmagical object that isnt being worn or carried also takes the damage if it is in the spells area. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot level above 2nd.
 
     --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
-    --&CasterToken|@{selected|token_id}
-    --~|array;pagetokens;AllTokens;[&CasterToken]
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
 
     --/|*******************Main************************
     -->RollDamage|
     -->OutputText|
     --%CurrentToken|foreach;AllTokens 
-        --?[&CurrentToken] -eq [&CasterToken]|%
         --&CharName|[*[&CurrentToken]:character_name]
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
-        -->GetTargetAngle|[&CurrentToken]
         --?[$TargetDistance] -gt [&SpellRadius]|%   
-        -->MakeSavingThrow|[&CurrentToken]
+        --?"[*[&CurrentToken]:npc_type]" -inc "construct" -or "[*[&CurrentToken]:npc_type]" -inc "elemental"|>MakeDisadvantagedSave;[&CurrentToken]|>MakeSavingThrow;[&CurrentToken];
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
         --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
@@ -60,7 +59,7 @@
     --<|
 
     --:GetTargetDistance|
-        --~TargetDistance|distance;@{selected|token_id};[%1%]
+        --~TargetDistance|distance;@{target|token_id};[%1%]
     --<|
 
     --:MakeSavingThrow|
@@ -68,25 +67,24 @@
         --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
     --<|
 
-    --:GetTargetAngle|
-        --~TargetAngle|math;angle;@{selected|token_id};[%1%]
-        --~TargetAngleRounded|math;round;[&TargetAngle]
-    --<|
-
     --:SetSaveBool|
         --&SaveBool|[%1%]
     --<|
 
+    --:MakeDisadvantagedSave|
+        --=TargetSave|2d20kl1 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*|Elemental or Construct has disadvantage! 
+    --<|
+
     --:CaseSaveFails|
         --*|Save Fails!
-        --*|Moved target [$TargetAngleRounded] degrees
-        --@token-mod|_ignore-selected _ids [%1%] _move =[$TargetAngleRounded]|2g
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
         --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
-     
+
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
         -->CalculateDamage|[$HalfDamage];Normal
@@ -94,12 +92,12 @@
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
         --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
-
+    
     --:CalculateDamage|
         --=TotalDamage|[%1%]
         --&CreatureResist|[%2%]
     --<|
-
+    
     --:ReportDamage|
         --*|Resistance: [&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
@@ -110,8 +108,8 @@
     --<|
 
     --:PlayEffects|
-        --vtoken|@{selected|token_id} [&DamageFX]
-    --<|
+        --vtoken|@{target|token_id} [&DamageFX]
+    --<| 
 
     --:OutputDescription|
         --+|[f11][&Description][/f]
