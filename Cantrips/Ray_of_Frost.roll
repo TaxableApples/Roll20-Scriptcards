@@ -3,17 +3,17 @@
   --#overridetemplate|wizard
   --#title|Ray of Frost
   --=CritRoll|20
+  --&AttackModifierType|INT
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[INT]
+  --&FeatDamageType|FEAT
   --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
+  --=CritFeatDamage|0
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|1d8
-  --=CritDice|1d8
   --&DamageType|cold
   --&DamageFX|beam-frost
   --&MarkerA|tread
+  --=DamageDice|1d8
+  --=CritDice|1d8
   --&Description|A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
   
   --/|****************DO NOT CHANGE******************
@@ -33,31 +33,48 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
+    --+Attack Roll|[$AttackRoll]
+    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
+    --+Attack Bonuses|[$AttackBonuses]
+    --+|[f18]Total Attack[$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
+    --+Damage Roll|[$DamageDice] + [$CritDice]
+    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
+    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
     -->ApplyStatusMarker|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$FeatDamage]
+    --+Damage Roll|[$DamageDice]
+    --?[$FeatDamage] -ne 0|>ShowDamageBonus
+    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
     -->ApplyStatusMarker|
+  --<|
+
+  --:ShowDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
+  --<|
+
+  --:ShowCriticalDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
 
   --:Miss|

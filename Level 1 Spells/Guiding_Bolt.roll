@@ -32,123 +32,48 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
+    --+Attack Roll|[$AttackRoll]
+    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
+    --+Attack Bonuses|[$AttackBonuses]
+    --+|[f18]Total Attack[$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
+    --+Damage Roll|[$DamageDice] + [$CritDice]
+    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
+    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
     -->ApplyStatus|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$FeatDamage]
+    --+Damage Roll|[$DamageDice]
+    --?[$FeatDamage] -ne 0|>ShowDamageBonus
+    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
     -->ApplyStatus|@{target|token_id}
   --<|
 
-  --:Miss|
-    --=Damage|0
-    --+|[f18]The attack [#ff0000]missed[/#]![/f]
-  --<|
-
-  --:CheckResistances|
-    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
-    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
-    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
-  --<|
-    
-  --:ApplyResistance|
-    --=Resistance|[$Damage] \ 2
-    --*|Creature is resistant to [&DamageType] damage!
+  --:ShowDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
   
-  --:ApplyImmunity|
-    --=Immunity|[$Damage]
-    --*|Creature is immune to [&DamageType] damage!
-  --<|
-  
-  --:ApplyVulnerability|
-    --=Vulnerability|[$Damage]
-    --*|Creature is vulnerable to [&DamageType] damage!
-  --<|
-
-  --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-  --<|
-
-  --:ApplyStatus|
-    --@token-mod|_ignore-selected _ids [%1%] _set emits_bright_light|on bright_light_distance|5 lightColor#808000|!scriptcard  {{
-  --/|**********Customizable Variables***************
-  --#overridetemplate|wizard
-  --#title|Guiding Bolt
-  --=CritRoll|20
-  --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[WIS]
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
-  --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|?{Spell Level?|1,4d6|2,5d6|3,6d6|4,7d6|5,8d6|6,9d6|7,10d6|8,11d6|9,12d6}
-  --=CritDice|[$DamageDice.RollText]
-  --&DamageType|radiant
-  --&DamageFX|beam-holy
-  --&Description|A flash of light streaks toward a creature of your choice within range. Make a ranged spell attack against the target. On a hit, the target takes 4d6 radiant damage, and the next attack roll made against this target before the end of your next turn has advantage, thanks to the mystical dim light glittering on the target until then. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d6 for each slot level above 1st.
-
-  --/|****************DO NOT CHANGE******************
-  --#sourceToken|@{selected|token_id}
-  --#targetToken|@{target|token_id}
-  --#emoteText|@{selected|token_name}
-  --=TargetAC|@{target|npc_ac}
-  --=Damage|0
-  --=Resistance|0
-  --=Immunity|0
-  --=Vulnerability|0
-  --=TotalDamage|0
-  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
-
-  --/|*******************Main************************
-  -->MakeAttack|
-  -->PlayEffects|
-  -->CalculateDamage|
-  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->OutputTxt|
-  --X|
-  
-  --/|****************Subroutines********************
-  --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
-    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
-  --<|
-
-  --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
-    -->CheckResistances|
-    -->ApplyStatus|
-  --<|
-  
-  --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
-    -->CheckResistances|
-    -->ApplyStatus|@{target|token_id}
+  --:ShowCriticalDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
 
   --:Miss|

@@ -25,6 +25,7 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
 

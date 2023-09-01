@@ -41,6 +41,7 @@
     --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
     --+Damage Roll|[$DamageDice]
     --?[$BonusDamage] -ne 0|>OutputBonusDamage
+    --+|[br]
     --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --<|
 
@@ -58,7 +59,6 @@
     --&SaveBool|[%1%]
   --<|
   
-
   --:CaseSaveFails|
       --*|Save Fails!
       -->CalculateDamage|[$Damage];Normal

@@ -3,16 +3,16 @@
   --#overridetemplate|wizard
   --#title|Shocking Grasp
   --=CritRoll|20
+  --&AttackModifierType|INT
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[INT]
+  --&FeatDamageType|FEAT
   --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
+  --=CritFeatDamage|0
   --=ProficiencyBonus|@{selected|pb}
+  --&DamageType|lightning
+  --&DamageFX|missile-frost
   --=DamageDice|1d8
   --=CritDice|1d8
-  --&DamageType|lightning
-  --&DamageFX|glow-frost
   --&Description|Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have advantage on the attack roll if the target is wearing armor made of metal. On a hit, the target takes 1d8 lightning damage, and it cant take reactions until the start of its next turn. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
   
   --/|****************DO NOT CHANGE******************
@@ -26,35 +26,52 @@
   --=Vulnerability|0
   --=TotalDamage|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
-
+  
   --/|*******************Main************************
   -->MakeAttack|
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
+    --+Attack Roll|[$AttackRoll]
+    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
+    --+Attack Bonuses|[$AttackBonuses]
+    --+|[f18]Total Attack[$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
+    --+Damage Roll|[$DamageDice] + [$CritDice]
+    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
+    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$FeatDamage]
+    --+Damage Roll|[$DamageDice]
+    --?[$FeatDamage] -ne 0|>ShowDamageBonus
+    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
+  --<|
+
+  --:ShowDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
+  --<|
+
+  --:ShowCriticalDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
 
   --:Miss|

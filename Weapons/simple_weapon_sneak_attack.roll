@@ -4,16 +4,16 @@
   --#overridetemplate|wizard
   --#title|Dagger
   --=CritRoll|20
-  --=AttackModifier|@{selected|strength_mod}
-  --=DamageModifier|@{selected|strength_mod}
-  --&AttackModifierType|[STR]
+  --=AttackModifier|@{selected|dexterity_mod}
+  --=DamageModifier|@{selected|dexterity_mod}
+  --&AttackModifierType|[DEX]
   --=ProficiencyBonus|@{selected|pb}
   --=MagicWeaponBonus|0
   --=DamageDice|1d4
   --=CritDice|1d4
   --&DamageType|piercing
   --&FeatDamageType|Sneak Attack
-  --=FeatDamage|?{Sneak Attack|Yes,1d6|No,2d6}
+  --=FeatDamage|?{Sneak Attack|Yes,1d6|No,0}
   --=CritFeatDamage|[$FeatDamage.RollText]
   
   --=DuelBonus|0

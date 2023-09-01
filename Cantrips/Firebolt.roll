@@ -3,18 +3,16 @@
   --#overridetemplate|wizard
   --#title|Firebolt
   --=CritRoll|20
+  --&AttackModifierType|INT
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[INT]
-  
+  --&FeatDamageType|FEAT
+  --=FeatDamage|0
+  --=CritFeatDamage|0
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|1d10
-  
   --&DamageType|fire
   --&DamageFX|beam-fire
-  --&FeatDamageType|[FEAT]
-  --=FeatDamage|0
-  
+  --=DamageDice|1d10
+  --=CritDice|1d10
   --&Description|You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isnt being worn or carried. This spells damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).
   
   --/|****************DO NOT CHANGE******************
@@ -22,8 +20,7 @@
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
-  --=CritDice|[$DamageDamage.RollText]
-  --=CritFeatDamage|[$FeatDamage.RollText]
+  --=Damage|0
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
@@ -35,31 +32,46 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
-    --+Attack Roll| [$AttackRoll]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+Attack Bonus| [$AttackBonus]
-    --+|[f18]Total Attack [$Attack][/f]
+    --+Attack Roll|[$AttackRoll]
+    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
+    --+Attack Bonuses|[$AttackBonuses]
+    --+|[f18]Total Attack[$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
+    --+Damage Roll|[$DamageDice] + [$CritDice]
+    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
+    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$FeatDamage]
+    --+Damage Roll|[$DamageDice]
+    --?[$FeatDamage] -ne 0|>ShowDamageBonus
+    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
+  --<|
+
+  --:ShowDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
+  --<|
+
+  --:ShowCriticalDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
 
   --:Miss|

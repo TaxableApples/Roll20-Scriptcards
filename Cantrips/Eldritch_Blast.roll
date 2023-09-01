@@ -3,16 +3,16 @@
   --#overridetemplate|wizard
   --#title|Eldritch Blast
   --=CritRoll|20
+  --&AttackModifierType|WIS
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[WIS]
+  --&FeatDamageType|FEAT
   --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
+  --=CritFeatDamage|0
   --=ProficiencyBonus|@{selected|pb}
-  --=DamageDice|1d10
-  --=CritDice|1d10
   --&DamageType|force
   --&DamageFX|beam-charm
+  --=DamageDice|1d10
+  --=CritDice|1d10
   --&Description|A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 force damage. The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th level. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam.
   
   --/|****************DO NOT CHANGE******************
@@ -32,29 +32,46 @@
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
+    --+Attack Roll|[$AttackRoll]
+    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
+    --+Attack Bonuses|[$AttackBonuses]
+    --+|[f18]Total Attack[$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
+    --+Damage Roll|[$DamageDice] + [$CritDice]
+    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
+    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
+    --=Damage|[$DamageDice] + [$FeatDamage]
+    --+Damage Roll|[$DamageDice]
+    --?[$FeatDamage] -ne 0|>ShowDamageBonus
+    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
+  --<|
+
+  --:ShowDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
+  --<|
+
+  --:ShowCriticalDamageBonus|
+    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
+    --+Damage Bonuses|[$DamageBonuses]
   --<|
 
   --:Miss|
