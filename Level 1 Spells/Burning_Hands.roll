@@ -1,6 +1,4 @@
 !scriptcard {{
-    --/| There isn't anything to use from the character sheet that indicates if the targets are made of inorganic material, so I simply applied the disadvantage on elementals and constructs. An alternative idea would be to create an array of specific inorganic creature names that will be included in your campaign, and then check if the targets name exists in that array. This version works well enough for my use case.
-
     --/|**********Customizable Variables***************
     --#overridetemplate|wizard
     --#title|Burning Hands
