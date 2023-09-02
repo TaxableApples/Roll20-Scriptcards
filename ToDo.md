@@ -39,7 +39,7 @@ Moonbeam
 ~~Call Lightning~~
 ~~Fireball~~
 Lightning Bolt
-Vampiric Touch
+~~Vampiric Touch~~
 
 **4th Level Spells**
 Blight

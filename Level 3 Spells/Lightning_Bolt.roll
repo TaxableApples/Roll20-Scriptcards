@@ -1,0 +1,120 @@
+!scriptcard {{
+    --/|**********Customizable Variables***************
+    --#overridetemplate|wizard
+    --#title|Lightning Bolt
+    --&SpellDistance|20
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|0
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|3,8d6|4,9d6|5,10d6|6,11d6|7,12d6|8,13d6|9,14d6}
+    --&DamageType|lightning
+    --&DamageFX|beam-frost
+    --&Description|A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose. Each creature in the line must make a Dexterity saving throw. A creature takes 8d6 lightning damage on a failed save, or half as much damage on a successful one. The lightning ignites flammable objects in the area that arent being worn or carried. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot above 3rd.
+
+    --/|****************DO NOT CHANGE******************
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
+    --~TargetAngle|math;angle;@{selected|token_id};@{target|token_id}
+    --~TargetAngleRounded|math;round;[&TargetAngle]
+
+    --/|*******************Main************************
+    -->RollDamage|
+    -->OutputText|
+    --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq @{selected|token_id}|%
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        --?[$TargetDistance] -gt [&SpellDistance]|% 
+        -->GetCreatureAngle|[&CurrentToken]
+        --?[$TargetAngleRounded] -eq [$CreatureAngleRounded]|>MakeSavingThrow;[&CurrentToken]|%
+        --*Distance | [$TargetDistance]
+        --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+        --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
+        -->ReportDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+    --%|
+    -->PlayEffects|
+    --X|
+
+    --/|****************Subroutines********************
+    --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+        --=DoubleDamage|[$Damage] * 2
+        --=HalfDamage|[$Damage] \ 2
+        --=QuarterDamage|[$Damage] \ 4
+    --<|
+
+    --:OutputText|
+        --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+        --+Damage Roll|[$DamageDice]
+        --?[$BonusDamage] -ne 0|>OutputBonusDamage
+        --+|[br]
+        --+|[rbutton]Show Description::OutputDescription[/rbutton]
+    --<|
+
+    --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{selected|token_id};[%1%]
+    --<|
+
+    --:GetCreatureAngle|
+        --~CreatureAngle|math;angle;@{selected|token_id};[%1%]
+        --~CreatureAngleRounded|math;round;[&CreatureAngle]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+    --<|
+
+    --:SetSaveBool|
+        --&SaveBool|[%1%]
+    --<|
+
+    --:CaseSaveFails|
+        --*|Save Fails!
+        -->CalculateDamage|[$Damage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CaseSaveSucceeds|
+        --*|Save Suceeds!
+        -->CalculateDamage|[$HalfDamage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+    
+    --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+    
+    --:ReportDamage|
+        --*|Resistance: [&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+
+    --:PlayEffects|
+        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --<| 
+
+    --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<|  
+}}
