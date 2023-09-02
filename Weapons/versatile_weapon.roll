@@ -9,7 +9,7 @@
   --&AttackModifierType|[DEX]
   --=ProficiencyBonus|@{selected|pb}
   --=MagicWeaponBonus|0
-  --=DamageDice|?{Attack Type|One Handed,1d6|Two Handed,1d8}
+  --=DamageDice|?{Attack Type|Two Handed,1d8|One Handed,1d6}
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|bludgeoning
   --&FeatDamageType|None
