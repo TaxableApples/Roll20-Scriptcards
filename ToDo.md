@@ -17,7 +17,7 @@ Holy Water
 ~~Vicious Mockery~~
 
 **1st Level Spells**
-Burning Hands
+~~Burning Hands~~
 ~~Guiding Bolt~~
 ~~Hellish Rebuke~~
 Hunter’s Mark
@@ -36,8 +36,8 @@ Moonbeam
 ~~Spiritual Weapon~~
 
 **3rd Level Spells**
-Call Lightning
-Fireball
+~~Call Lightning~~
+~~Fireball~~
 Lightning Bolt
 Vampiric Touch
 

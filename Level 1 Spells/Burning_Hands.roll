@@ -1,0 +1,122 @@
+!scriptcard {{
+    --/| There isn't anything to use from the character sheet that indicates if the targets are made of inorganic material, so I simply applied the disadvantage on elementals and constructs. An alternative idea would be to create an array of specific inorganic creature names that will be included in your campaign, and then check if the targets name exists in that array. This version works well enough for my use case.
+
+    --/|**********Customizable Variables***************
+    --#overridetemplate|wizard
+    --#title|Burning Hands
+    --&SpellRadius|3
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|0
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|1,3d6|2,4d6|3,5d6|4,6d6|5,7d6|6,8d6|7,9d6|8,10d6|9,11d6}
+    --&DamageType|fire
+    --&DamageFX|breath-fire
+    --&Description|As you hold your hands with thumbs touching and fingers spread, a thin sheet of flames shoots forth from your outstretched fingertips. Each creature in a 15-foot cone must make a Dexterity saving throw. A creature takes 3d6 fire damage on a failed save, or half as much damage on a successful one. The fire ignites any flammable objects in the area that arent being worn or carried. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d6 for each slot level above 1st.
+
+    --/|****************DO NOT CHANGE******************
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
+    --~TargetAngle|math;angle;@{selected|token_id};@{target|token_id}
+
+    --/|*******************Main************************
+    -->RollDamage|
+    -->OutputText|
+    --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq @{selected|token_id}|%
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        --?[$TargetDistance] -gt [&SpellRadius]|% 
+        -->GetCreatureAngle|[&CurrentToken]
+        --?[$AngleDiff] -lt 24 -and [$AngleDiff] -gt -24|>MakeSavingThrow;[&CurrentToken]|%
+        --*Distance | [$TargetDistance]
+        --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+        --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
+        -->ReportDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+    --%|
+    -->PlayEffects|
+    --X|
+
+    --/|****************Subroutines********************
+    --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+        --=DoubleDamage|[$Damage] * 2
+        --=HalfDamage|[$Damage] \ 2
+        --=QuarterDamage|[$Damage] \ 4
+    --<|
+
+    --:OutputText|
+        --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+        --+Damage Roll|[$DamageDice]
+        --?[$BonusDamage] -ne 0|>OutputBonusDamage
+        --+|[br]
+        --+|[rbutton]Show Description::OutputDescription[/rbutton]
+    --<|
+
+    --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{selected|token_id};[%1%]
+    --<|
+
+    --:GetCreatureAngle|
+        --~CreatureAngle|math;angle;@{selected|token_id};[%1%]
+        --~CreatureAngleRounded|math;round;[&CreatureAngle]
+        --=AngleDiff|[&TargetAngle] - [$CreatureAngleRounded] + 180 + 360 % 360 - 180
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+    --<|
+
+    --:SetSaveBool|
+        --&SaveBool|[%1%]
+    --<|
+
+    --:CaseSaveFails|
+        --*|Save Fails!
+        -->CalculateDamage|[$Damage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CaseSaveSucceeds|
+        --*|Save Suceeds!
+        -->CalculateDamage|[$HalfDamage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+    
+    --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+    
+    --:ReportDamage|
+        --*|Resistance: [&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+
+    --:PlayEffects|
+        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --<| 
+
+    --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<|  
+}}

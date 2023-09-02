@@ -1,0 +1,118 @@
+!scriptcard {{
+    --/| There isn't anything to use from the character sheet that indicates if the targets are made of inorganic material, so I simply applied the disadvantage on elementals and constructs. An alternative idea would be to create an array of specific inorganic creature names that will be included in your campaign, and then check if the targets name exists in that array. This version works well enough for my use case.
+
+    --/|**********Customizable Variables***************
+    --#overridetemplate|wizard
+    --#title|Call Lightning
+    --&SpellRadius|1
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|?{Hows the Weather?|clear,0|stormy,1d10}
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|3,3d10|4,4d10|5,5d10|6,6d10|7,7d10|8,8d10|9,9d10}
+    --&DamageType|lightning
+    --&DamageFX|burn-frost
+    --&Description|A storm cloud appears in the shape of a cylinder that is 10 feet tall with a 60-foot radius, centered on a point you can see within range above you. The spell fails if you cant see a point in the air where the storm cloud could appear (for example, if you are in a room that cant accommodate the cloud). When you cast the spell, choose a point you can see under the cloud. A bolt of lightning flashes down from the cloud to that point. Each creature within 5 feet of that point must make a Dexterity saving throw. A creature takes 3d10 lightning damage on a failed save, or half as much damage on a successful one. On each of your turns until the spell ends, you can use your action to call down lightning in this way again, targeting the same point or a different one. If you are outdoors in stormy conditions when you cast this spell, the spell gives you control over the existing storm instead of creating a new one. Under such conditions, the spells damage increases by 1d10. At Higher Levels: When you cast this spell using a spell slot of 4th or higher level, the damage increases by 1d10 for each slot level above 3rd.
+
+    --/|****************DO NOT CHANGE******************
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
+
+    --/|*******************Main************************
+    -->RollDamage|
+    -->OutputText|
+    --%CurrentToken|foreach;AllTokens 
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        --?[$TargetDistance] -gt [&SpellRadius]|%   
+        --?"[*[&CurrentToken]:npc_type]" -inc "construct" -or "[*[&CurrentToken]:npc_type]" -inc "elemental"|>MakeDisadvantagedSave;[&CurrentToken]|>MakeSavingThrow;[&CurrentToken];
+        --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+        --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
+        -->ReportDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+        -->PlayEffects|[&CurrentToken]
+    --%|
+    --X|
+
+    --/|****************Subroutines********************
+    --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+        --=DoubleDamage|[$Damage] * 2
+        --=HalfDamage|[$Damage] \ 2
+        --=QuarterDamage|[$Damage] \ 4
+    --<|
+
+    --:OutputText|
+        --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+        --+Damage Roll|[$DamageDice]
+        --?[$BonusDamage] -ne 0|>OutputBonusDamage
+        --+|[br]
+        --+|[rbutton]Show Description::OutputDescription[/rbutton]
+    --<|
+
+    --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{target|token_id};[%1%]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+    --<|
+
+    --:SetSaveBool|
+        --&SaveBool|[%1%]
+    --<|
+
+    --:MakeDisadvantagedSave|
+        --=TargetSave|2d20kl1 + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*|Elemental or Construct has disadvantage! 
+    --<|
+
+    --:CaseSaveFails|
+        --*|Save Fails!
+        -->CalculateDamage|[$Damage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CaseSaveSucceeds|
+        --*|Save Suceeds!
+        -->CalculateDamage|[$HalfDamage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+    
+    --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+    
+    --:ReportDamage|
+        --*|Resistance: [&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+
+    --:PlayEffects|
+        --vtoken|[%1%] [&DamageFX]
+    --<| 
+
+    --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<|  
+}}
