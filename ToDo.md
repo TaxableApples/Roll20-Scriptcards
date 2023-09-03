@@ -38,13 +38,12 @@ Moonbeam
 **3rd Level Spells**
 ~~Call Lightning~~
 ~~Fireball~~
-Lightning Bolt
+~~Lightning Bolt~~
 ~~Vampiric Touch~~
 
 **4th Level Spells**
 Blight
 Ice Storm
-Phantasmal Killer
 
 **5th Level Spells**
 Animate Objects

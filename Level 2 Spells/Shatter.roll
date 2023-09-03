@@ -27,7 +27,14 @@
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
         --?[$TargetDistance] -gt [&SpellRadius]|%   
-        --?"[*[&CurrentToken]:npc_type]" -inc "construct" -or "[*[&CurrentToken]:npc_type]" -inc "elemental"|>MakeDisadvantagedSave;[&CurrentToken]|>MakeSavingThrow;[&CurrentToken];
+        --?"[*[&CurrentToken]:npc_type]" -ninc "construct" 
+            -and "[*[&CurrentToken]:npc_type]" -ninc "elemental" 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
+        --?"[*[&CurrentToken]:npc_type]" -inc "construct" 
+            -or "[*[&CurrentToken]:npc_type]" -inc "elemental" 
+            -or "[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
         --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
@@ -64,18 +71,13 @@
     --<|
 
     --:MakeSavingThrow|
-        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
-        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --=TargetSave|[%2%] + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave] 
+        --*Roll|[%3%]
     --<|
 
     --:SetSaveBool|
         --&SaveBool|[%1%]
-    --<|
-
-    --:MakeDisadvantagedSave|
-        --=TargetSave|2d20kl1 + [*[%1%]:constitution_save_bonus]
-        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
-        --*|Elemental or Construct has disadvantage! 
     --<|
 
     --:CaseSaveFails|
@@ -100,7 +102,7 @@
     --<|
     
     --:ReportDamage|
-        --*|Resistance: [&CreatureResist]
+        --*Resistance|[&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 

@@ -20,7 +20,9 @@
   --/|*******************Main************************
   -->OutputText|
   -->RollDamage|
-  -->MakeSavingThrow|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
   --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
   --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
   --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
@@ -51,8 +53,9 @@
   --<|
 
   --:MakeSavingThrow|
-    --=TargetSave|1d20 + [$NPCSaveMod]
+    --=TargetSave|[%1%]+[$NPCSaveMod]
     --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
   --<|
     
   --:SetSaveBool|
@@ -78,7 +81,7 @@
   --<|
 
   --:ReportDamage|
-        --*|Resistance: [&CreatureResist]
+        --*Resistance| [&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 

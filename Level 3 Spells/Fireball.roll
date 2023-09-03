@@ -26,7 +26,10 @@
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
         --?[$TargetDistance] -gt [&SpellRadius]|%
-        -->MakeSavingThrow|[&CurrentToken]
+        --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
         --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
@@ -64,8 +67,9 @@
     --<|
 
     --:MakeSavingThrow|
-        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
+        --=TargetSave|[%2%] + [*[%1%]:dexterity_save_bonus]
         --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*Roll|[%3%]
     --<|
 
     --:SetSaveBool|
@@ -94,7 +98,7 @@
     --<|
 
     --:ReportDamage|
-        --*|Resistance: [&CreatureResist]
+        --*Resistance|[&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 

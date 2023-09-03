@@ -28,7 +28,10 @@
         -->GetTargetDistance|[&CurrentToken]
         -->GetTargetAngle|[&CurrentToken]
         --?[$TargetDistance] -gt [&SpellRadius]|%   
-        -->MakeSavingThrow|[&CurrentToken]
+        --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
         --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
@@ -64,14 +67,15 @@
         --~TargetDistance|distance;@{selected|token_id};[%1%]
     --<|
 
-    --:MakeSavingThrow|
-        --=TargetSave|1d20 + [*[%1%]:constitution_save_bonus]
-        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
-    --<|
-
     --:GetTargetAngle|
         --~TargetAngle|math;angle;@{selected|token_id};[%1%]
         --~TargetAngleRounded|math;round;[&TargetAngle]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|[%2%] + [*[%1%]:constitution_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*Roll|[%3%]
     --<|
 
     --:SetSaveBool|
@@ -80,7 +84,6 @@
 
     --:CaseSaveFails|
         --*|Save Fails!
-        --*|Moved target [$TargetAngleRounded] degrees
         --@token-mod|_ignore-selected _ids [%1%] _move =[$TargetAngleRounded]|2g
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
@@ -102,7 +105,7 @@
     --<|
 
     --:ReportDamage|
-        --*|Resistance: [&CreatureResist]
+        --*Resistance|[&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 
