@@ -1,0 +1,6 @@
+!scriptcard {{
+    --&SelectedToken|@{selected|token_id}
+    --=NpcHp|@{selected|npc_hpformula}
+    --*New NPC HP|[$NpcHp]
+    --@token-mod|_ids [&SelectedToken] _set bar1_value|[$NpcHp] bar1_max|[$NpcHp] bar2_link|npc_ac bar3_link|passive_wisdom
+}}
