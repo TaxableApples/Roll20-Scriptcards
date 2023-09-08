@@ -1,6 +1,15 @@
 !scriptcard {{
-    --&SelectedToken|@{selected|token_id}
-    --=NpcHp|@{selected|npc_hpformula}
-    --*New NPC HP|[$NpcHp]
-    --@token-mod|_ids [&SelectedToken] _set bar1_value|[$NpcHp] bar1_max|[$NpcHp] bar2_link|npc_ac bar3_link|passive_wisdom
+    --~|array;selectedtokens;AllSelectedTokens;
+    --#title|Selected Token Setup
+    
+    --%CurrentToken|foreach;AllSelectedTokens 
+        --&TokenName|[*[&CurrentToken]:character_name]
+        --=NpcHp|[*[&CurrentToken]:npc_hpformula]
+        --&NpcAc|[*[&CurrentToken]:npc_ac]
+        --*New HP value for [&TokenName]|[$NpcHp]
+        --*Creature AC &TokenName]|[&NpcAc]
+        --@token-mod|_ids [&CurrentToken] _set bar1_value|[$NpcHp] bar1_max|[$NpcHp] bar2_link|npc_ac  bar2_value|[&NpcAc] bar2_max|[&NpcAc] bar3_link|passive_wisdom
+    --%|
 }}
+
+
