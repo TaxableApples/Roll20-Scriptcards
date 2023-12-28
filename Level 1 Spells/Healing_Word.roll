@@ -1,0 +1,37 @@
+!scriptcard {{ 
+
+  --/|****************Declarations*******************
+  --#overridetemplate|wizard
+  --#title|Healing Word
+  --=HealingDice|1d4
+  --&SpellBonus|@{selected|spellcasting_ability}
+  --&Description|A creature of your choice that you can see within range regains hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, the Healing increases by 1d4 for each slot level above 1st.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Healing|0
+  --=TotalHealing|0
+
+  --/|*******************Main************************
+  -->CalculateHealing|
+  -->ApplyHealing|@{target|token_id};1;[$TotalHealing]
+  --+Healing|[&SpellBonus][$HealingDice]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+ 
+  --:CalculateHealing|
+    --=Healing|[$HealingDice]+[&SpellBonus]
+    --=TotalHealing|[$Healing]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyHealing|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|+[%3%]!
+  --<|
+}}

@@ -1,0 +1,32 @@
+!scriptcard {{ 
+  --/|****************Declarations*******************
+  --#overridetemplate|wizard
+  --#title|Second Wind
+  --=HealingDice|1d10
+  --&SpellBonus|@{selected|base_level}
+  --&Description|You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before you can use it again.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->CalculateHealing|
+  -->ApplyHealing|@{selected|token_id};1;[$Healing]
+  --+Healing|[&SpellBonus] + [$HealingDice]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+ 
+  --:CalculateHealing|
+    --=Healing|[$HealingDice]+[&SpellBonus]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyHealing|
+    --@token-mod|_ids [%1%] _set bar[%2%]_value|+[%3%]!
+  --<|
+}}

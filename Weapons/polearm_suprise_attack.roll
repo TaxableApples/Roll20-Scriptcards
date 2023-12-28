@@ -1,0 +1,111 @@
+!scriptcard  {{
+
+  --/|****************Declarations*******************
+  --#overridetemplate|wizard
+  --#title|Scythe
+  --=CritRoll|20
+  --=AttackModifier|@{selected|strength_mod}
+  --=DamageModifier|@{selected|strength_mod}
+  --&AttackModifierType|[STR]
+  --=ProficiencyBonus|@{selected|pb}
+  --=MagicWeaponBonus|0
+  --=DamageDice|1d10
+  --=CritDice|1d10
+  --&DamageType|piercing
+  --&FeatDamageType|Surprise Attack
+  --=FeatDamage|?{Surprise Attack?|No,0|Yes,2d6}
+  --=CritFeatDamage|?{Surprise Attack?|No,0|Yes,2d6}
+  
+  --=DuelBonus|0
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=TargetAC|@{target|npc_ac}
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --X|
+  
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$DuelBonus] + [$MagicWeaponBonus]
+    --+Attack Roll| [$AttackRoll]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
+    --+Attack Bonus| [$AttackBonus]
+    --+|[f18]Total Attack [$Attack][/f]
+    --+|[hr]
+    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
+    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:Crit|
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --+Damage Bonus|[$DamageBonuses]
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
+    --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
+    -->CheckResistances|
+  --<|
+  
+  --:Hit|
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [&MagicWeaponBonus]
+    --+Damage Roll|[$DamageDice]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --+Damage Bonus|[$DamageBonuses]
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
+    -->CheckResistances|
+  --<|
+
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
+  --<|
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:Miss|
+    --=Damage|0
+    --+|[f18]Attack [#ff0000]missed[/#]![/f]
+  --<|
+
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+    
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --+|[hr]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+  
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}
