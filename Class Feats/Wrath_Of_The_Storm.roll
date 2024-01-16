@@ -1,0 +1,102 @@
+!scriptcard  {{
+  --/|**********Customizable Variables***************
+  --#overridetemplate|wizard
+  --#title|Wrath of the Storm
+  --&SpellSaveType|Dexterity
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=BonusDamage|0
+  --&BonusDamageType|[FEAT]
+  --=DamageDice|2d8
+  --&DamageType|?{DamageType?|Lightning,lightning|Thunder,thunder}
+  --&DamageFX|bomb-fire
+  --&Description|Also at 1st level, you can thunderously rebuke attackers. When a creature within 5 feet of you that you can see hits you with an attack, you can use your reaction to cause the creature to make a Dexterity saving throw. The creature takes 2d8 lightning or thunder damage (your choice) on a failed saving throw, and half as much damage on a successful one. You can use this feature a number of times equal to your Wisdom modifier (a minimum of once). You regain all expended uses when you finish a long rest.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->OutputText|
+  -->RollDamage|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+  --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+  --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
+  --X|
+  
+  --/|****************Subroutines********************
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+    --=DoubleDamage|[$Damage] * 2
+    --=HalfDamage|[$Damage] \ 2
+    --=QuarterDamage|[$Damage] \ 4
+  --<|
+
+  --:OutputText|
+    --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+    --+Damage Roll|[$DamageDice]
+    --?[$BonusDamage] -ne 0|>OutputBonusDamage
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
+  --<|
+
+  --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+  
+  --:CaseSaveFails|
+      --*|Save Fails!
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CaseSaveSucceeds|
+      --*|Save Suceeds!
+      -->CalculateDamage|[$HalfDamage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+  --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+  --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+  
+  --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<| 
+}}
