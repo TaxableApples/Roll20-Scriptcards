@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Eldritch Blast
   --=CritRoll|20
-  --&AttackModifierType|WIS
+  --&AttackModifierType|CHA
   --=AttackModifier|@{selected|spellcasting_ability}
   --&FeatDamageType|FEAT
   --=FeatDamage|0

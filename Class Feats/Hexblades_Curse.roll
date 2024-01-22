@@ -2,8 +2,8 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Hexblade's Curse (Rapier)
-  --=CritRoll|19
+  --#title|Hexblade Rapier
+  --=CritRoll|20
   --=AttackModifier|@{selected|charisma_mod}
   --=DamageModifier|@{selected|charisma_mod}
   --&AttackModifierType|[CHA]
@@ -12,36 +12,43 @@
   --=DamageDice|1d8
   --=CritDice|1d8
   --&DamageType|piercing
-  --&FeatDamageType|Booming Blade
-  --=FeatDamage|?{Booming Blade|Yes,0|No,0}
-  --=CritFeatDamage|[$FeatDamage.RollText]
+  --&FeatDamageType|FEAT
+  --=FeatDamage|[$FeatDamage.RollText]
+  --=CritFeatDamage|0
   --=DuelBonus|0
-  --&Description|Starting at 1st level, you gain the ability to place a baleful curse on someone. As a bonus action, choose one creature you can see within 30 feet of you. The target is cursed for 1 minute. The curse ends early if the target dies, you die, or you are incapacitated. Until the curse ends, you gain the following benefits: You gain a bonus to damage rolls against the cursed target. The bonus equals your proficiency bonus. Any attack roll you make against the cursed target is a critical hit on a roll of 19 or 20 on the d20. If the cursed target dies, you regain hit points equal to your warlock level + your Charisma modifier (minimum of 1 hit point). You can’t use this feature again until you finish a short or long rest.
+
+  --/|*****Boolean Flags, see functions for damage assignment*****
+  --=HexbladeCurse|?{Hexblade's Curse|Yes,1|No,0}
+  --=BoomingBlade|?{Booming Blade|Yes,1|No,0}
 
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
+  --=HexbladeCurseBonus|0
+  --=BoomingBladeDamage|0
+  --=CritBoomingBladeDamage|0
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
+  -->ExecuteBoomingBlade|
+  -->ExecuteHexbladeCurse|
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  --+|[br]
-  --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$DuelBonus] + [$MagicWeaponBonus]
     --+Attack Roll| [$AttackRoll]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] + [MAGIC]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
@@ -50,9 +57,9 @@
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$ProficiencyBonus] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$BoomingBladeDamage] + [$HexbladeCurseBonus] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$ProficiencyBonus] + [HEX] + [$FeatDamage] + [$CritFeatDamage] + [&FeatDamageType] + [&MagicWeaponBonus] + [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$BoomingBladeDamage] [BOOM] + [$CritBoomingBladeDamage] [BMB] + [$HexbladeCurseBonus] [HEX] + [$FeatDamage] [FEAT] + [$CritFeatDamage] [FEAT] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
@@ -61,13 +68,11 @@
   --:Hit|
     --=Damage|[$DamageDice] + [$DamageModifier] + [$ProficiencyBonus] + [$FeatDamage] + [&MagicWeaponBonus]
     --+Damage Roll|[$DamageDice]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$ProficiencyBonus] + [HEX] + [$FeatDamage] + [&FeatDamageType] + [&MagicWeaponBonus] [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$BoomingBladeDamage] [BOOM] + [$HexbladeCurseBonus] [HEX] + [$FeatDamage] [FEAT] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
   --<|
-
-
 
   --:Miss|
     --=Damage|0
@@ -104,7 +109,23 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
-  --:OutputDescription|
-    --+|[f11][&Description][/f]
-  --<|  
+  --:ExecuteBoomingBlade|
+    --?[$BoomingBlade] -gt [$Zero] |BoomingBladeMsg
+  --<|
+
+  --:BoomingBladeMsg|
+    --=BoomingBladeDamage|0
+    --=CritBoomingBladeDamage|0
+    --+Spell Attack: | Booming Blade
+  --<|
+
+  --:ExecuteHexbladeCurse|
+    --?[$HexbladeCurse] -gt [$Zero]| HexbladeCurseMsg
+  --<|
+
+  --:HexbladeCurseMsg|
+    --+Bonus: | Hexblade's Curse
+    --=CritRoll|19
+    --=HexbladeCurseBonus|[$ProficiencyBonus]
+  --<|
 }}
