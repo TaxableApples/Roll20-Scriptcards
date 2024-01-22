@@ -12,23 +12,30 @@
   --=DamageDice|1d4
   --=CritDice|1d4
   --&DamageType|piercing
-  --&FeatDamageType|Sneak Attack
-  --=FeatDamage|?{Sneak Attack|Yes,1d6|No,0}
-  --=CritFeatDamage|[$FeatDamage.RollText]
+  --&FeatDamageType|FEAT
+  --=FeatDamage|0
+  --=CritFeatDamage|0
   
+  --/|*****Boolean Flags, see functions for damage assignment*****
+  --=SneakAttack|?{SneakAttack|Yes,1|No,0}
+
   --=DuelBonus|0
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
+  --=SneakAttackDamage|0
+  --=CritSneakAttackDamage|0
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
+  -->ExecuteSneakAttack|
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
@@ -47,9 +54,9 @@
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$SneakAttackDamage] + [$CritSneakAttackDamage] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$SneakAttackDamage] [SNEAK] + [$CritSneakAttackDamage] [SNEAK] + [$FeatDamage] [&FeatDamageType] + [$CritFeatDamage] [&FeatDamageType] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
@@ -57,9 +64,9 @@
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [&MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$SneakAttackDamage] + [$FeatDamage] + [&MagicWeaponBonus]
     --+Damage Roll|[$DamageDice]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$SneakAttackDamage] [SNEAK] + [$FeatDamage] [&FeatDamageType] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
@@ -107,5 +114,15 @@
 
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+
+  --:ExecuteSneakAttack|
+    --?[$SneakAttack] -gt [$Zero]| SneakAttackMsg
+  --<|
+
+  --:SneakAttackMsg|
+    --=SneakAttackDamage|1d6
+    --=CritSneakAttackDamage|1d6
+    --+Damage Bonus: | Sneak Attack
   --<|
 }}
