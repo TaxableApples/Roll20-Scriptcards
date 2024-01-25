@@ -1,31 +1,35 @@
 !scriptcard  {{
 
   --/|****************Declarations*******************
-  --#overridetemplate|wizard
-  --#title|Club
-  --=CritRoll|20
-  --=AttackModifier|@{selected|strength_mod}
-  --=DamageModifier|@{selected|strength_mod}
-  --&AttackModifierType|[STR]
-  --=ProficiencyBonus|@{selected|pb}
-  --=MagicWeaponBonus|0
-  --=DamageDice|1d4
-  --=CritDice|1d4
-  --&DamageType|bludgeoning
-  --&FeatDamageType|None
-  --=FeatDamage|0
-  --=CritFeatDamage|0
-  
-  --=DuelBonus|0
+    --#overridetemplate|wizard
+    --#title|Club
+    --=AttackModifier|@{selected|strength_mod}
+    --=DamageModifier|@{selected|strength_mod}
+    --&AttackModifierType|[STR]
+    --=MagicWeaponBonus|0
+    --=DamageDice|1d4
+    --=CritDice|[$DamageDice.RollText]
+    --&DamageType|bludgeoning
+    --=DuelBonus|0
+    --&FeatDamageType|None
+    --=FeatDamage|0
+    --=CritFeatDamage|0
+    
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
+  --=ProficiencyBonus|@{selected|pb}
+  --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=AttackMod|0
+  --=DamageMod|0
+  --=CritDamageMod|0
+  --&NoModText|NoRepeatingAttributeLoaded
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
@@ -36,7 +40,8 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$DuelBonus] + [$MagicWeaponBonus]
+    -->CheckForGlobalAttackMod|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$AttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
     --+Attack Roll| [$AttackRoll]
     --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
@@ -46,10 +51,39 @@
     --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
   --<|
 
+  --:CheckForGlobalAttackMod|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
+  --<|
+
+  --:ApplyGlobalAttackMod|
+    --=AttackMod|[*R:global_attack_roll]
+    --+Attack Mod:|[*R:global_attack_name] [$AttackMod]
+  --<|
+
+  --:CheckForGlobalDamageMod|
+    --Rfirst|@{selected|character_id};repeating_damagemod
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+  --<|
+
+  --:CritApplyGlobalDamageMod|
+    --=DamageMod|[*R:global_damage_damage]
+    --=CritDamageMod|[*R:global_damage_damage]
+    --=GlobalCritDmgTxt|[$DamageMod] + [$CritDamageMod] [CRIT]
+    --+Damage Mod:|[*R:global_damage_name] [$GlobalCritDmgTxt]
+  --<|
+
+  --:ApplyGlobalDamageMod|
+    --=DamageMod|[*R:global_damage_damage]
+    --+Damage Mod:|[*R:global_damage_name] [$DamageMod]
+  --<|
+
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    -->CheckForGlobalDamageMod|
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatDamage] + [$CritFeatDamage] + [$DamageMod] + [$CritDamageMod] + [$MagicWeaponBonus]
     --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [$CritFeatDamage] [&FeatDamageType] + [$DamageMod] [MOD] + [$CritDamageMod] [MOD] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
@@ -57,9 +91,10 @@
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [&MagicWeaponBonus]
+    -->CheckForGlobalDamageMod|
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatDamage] + [$DamageMod] + [&MagicWeaponBonus]
     --+Damage Roll|[$DamageDice]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [&MagicWeaponBonus] [MAGIC]
+    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType] + [$DamageMod] [MOD] + [&MagicWeaponBonus] [MAGIC]
     --+Damage Bonus|[$DamageBonuses]
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
@@ -108,4 +143,5 @@
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
+
 }}
