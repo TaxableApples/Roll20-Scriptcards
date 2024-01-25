@@ -13,7 +13,7 @@
   --/|*******************Main************************
   -->CalculateHealing|
   -->ApplyHealing|@{selected|token_id};1;[$Healing]
-  --+Healing|[&SpellBonus] + [$HealingDice]
+  --+|[f18]Healing [&SpellBonus] + [$HealingDice][/f]
   --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|

@@ -10,7 +10,7 @@
   --=DamageDice|?{Spell Level?|1,1d6|2,2d6|3,3d6|4,4d6|5,5d6|6,6d6|7,7d6|8,8d6|9,9d6}
   --&DamageType|psychic
   --&DamageFX|bomb-charm
-  --&Marker|screaming
+  --&Marker|Disadv
   --&Description|You drive a disorienting spike of psychic energy into the mind of one creature you can see within range. The target must succeed on an Intelligence saving throw or take 1d6 psychic damage and subtract 1d4 from the next saving throw it makes before the end of your next turn. This spell's damage increases by 1d6 when you reach certain levels: 5th level (2d6), 11th level (3d6), and 17th level (4d6).
   
   --/|****************DO NOT CHANGE******************
@@ -66,7 +66,7 @@
   --:CaseSaveFails|
       --*|Save Fails!
       -->CalculateDamage|[$Damage];Normal
-      -->ApplyStatus|
+      --?[$TargetSave] -lt [$SpellSaveDC]|ApplyStatusMarker
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
       --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
@@ -94,7 +94,7 @@
         --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
     --<|
 
-  --:ApplyStatus|
+  --:ApplyStatusMarker|
     --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&Marker]
   --<|
   

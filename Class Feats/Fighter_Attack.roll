@@ -2,27 +2,27 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Shortsword
-  --=AttackModifier|@{selected|dexterity_mod}
-  --=DamageModifier|@{selected|dexterity_mod}
-  --&AttackModifierType|Dexterity
+  --#title|Greatsword
+  --=AttackModifier|@{selected|strength_mod}
+  --=DamageModifier|@{selected|strength_mod}
+  --&AttackModifierType|Strength
   --=MagicWeaponBonus|0
-  --=DamageDice|1d6
+  --=DamageDice|2d6
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|piercing
+  --&DamageType|slashing
   --=DuelBonus|0
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
-  --&FeatAName|Sneak Attack
-  --=UseFeatA|?{Sneak Attack|Yes,1|No,0}
-  --=FeatADmg|1d6
-  --=CritFeatADmg|1d6
+  --&FeatAName|Surprise Attack
+  --=UseFeatA|?{Surprise Attack|No,0|Yes,1}
+  --=FeatADmg|2d6
+  --=CritFeatADmg|2d6
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDmg|0
   --=CritFeatBDmg|0
-
+    
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
@@ -33,12 +33,12 @@
   --=CritFeatADamage|0
   --=FeatBDamage|0
   --=CritFeatBDamage|0
---=CritRoll|20
+  --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
---=GlobalAttackMod|0
+  --=GlobalAttackMod|0
   --=GlobalDamageMod|0
   --=CritGlobalDamageMod|0
   --&NoModText|NoRepeatingAttributeLoaded
@@ -46,15 +46,15 @@
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
-    -->MakeAttack|
+  -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-        --+Attack Roll| [$AttackRoll]
--->CheckForGlobalAttackMods|
+    --+Attack Roll| [$AttackRoll]
+    -->CheckForGlobalAttackMods|
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
     --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
@@ -216,4 +216,4 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
-  }}
+}}
