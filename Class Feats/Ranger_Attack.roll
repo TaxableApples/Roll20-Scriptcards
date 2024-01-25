@@ -1,27 +1,27 @@
 !scriptcard  {{
 
   --/|****************Declarations*******************
-    --#overridetemplate|wizard
-    --#title|Longbow
-    --=AttackModifier|@{selected|dexterity_mod}
-    --=DamageModifier|@{selected|dexterity_mod}
-    --&AttackModifierType|Dexterity
-    --=MagicWeaponBonus|0
-    --=DamageDice|1d8
-    --=CritDice|[$DamageDice.RollText]
-    --&DamageType|piercing
-    --=DuelBonus|0
-    --&FeatDamageType|None
-    --=FeatDamage|0
-    --=CritFeatDamage|0
-    --&FeatAName|Favored Foe
-    --=UseFeatA|?{Favored Foe|Yes,1|No,0}
-    --=FeatADmg|1d6
-    --=CritFeatADmg|1d6
-    --&FeatBName|Hunters Mark
-    --=UseFeatB|0
-    --=FeatBDmg|0
-    --=CritFeatBDmg|0
+  --#overridetemplate|wizard
+  --#title|Longbow
+  --=AttackModifier|@{selected|dexterity_mod}
+  --=DamageModifier|@{selected|dexterity_mod}
+  --&AttackModifierType|Dexterity
+  --=MagicWeaponBonus|0
+  --=DamageDice|1d8
+  --=CritDice|[$DamageDice.RollText]
+  --&DamageType|piercing
+  --=DuelBonus|0
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  --&FeatAName|Favored Foe
+  --=UseFeatA|?{Favored Foe|Yes,1|No,0}
+  --=FeatADmg|1d6
+  --=CritFeatADmg|1d6
+  --&FeatBName|Hunters Mark
+  --=UseFeatB|0
+  --=FeatBDmg|0
+  --=CritFeatBDmg|0
     
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
@@ -43,7 +43,7 @@
   --=CritGlobalDamageMod|0
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
-  --=AttackRoll|?{Attack|Standard,1d20|Advantage,20d20kh1|Disadvantage,2d20kl1}
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
   -->MakeAttack|
@@ -66,12 +66,13 @@
 
   --:CheckForGlobalAttackMods|
     --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
+  --<|
 
-    --:CheckNextAttackMod|
+  --:CheckNextAttackMod|
       --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
       --Rnext|
       --?"[*R:global_attack_name]" -ne [&NoModText]|CheckNextAttackMod
- 
   --<|
 
   --:ApplyGlobalAttackMod|
@@ -81,8 +82,14 @@
 
   --:CheckForGlobalDamageMods|
     --Rfirst|@{selected|character_id};repeating_damagemod
+    -->CheckNextDamageMod|
+  --<|
+
+  --:CheckNextDamageMod|
     --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --Rnext|
+    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
   --<|
 
   --:CritApplyGlobalDamageMod|
@@ -137,9 +144,8 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$ProficiencyBonus] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
-    --?[$ProficiencyBonus] -ne 0|>ShowProficiencyBonus
     --?[$MagicBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
@@ -151,9 +157,8 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$DamageModifier] + [$ProficiencyBonus] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [&MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [&MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
-    --?[$ProficiencyBonus] -ne 0|>ShowProficiencyBonus
     --?[$MagicBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]

@@ -3,51 +3,62 @@
   --/|****************Declarations*******************
   --#overridetemplate|wizard
   --#title|Hexblade Rapier
-  --=CritRoll|20
   --=AttackModifier|@{selected|charisma_mod}
   --=DamageModifier|@{selected|charisma_mod}
-  --&AttackModifierType|[CHA]
-  --=ProficiencyBonus|@{selected|pb}
+  --&AttackModifierType|Charisma
   --=MagicWeaponBonus|0
   --=DamageDice|1d8
-  --=CritDice|1d8
+  --=CritDice|[$DamageDice.RollText]
   --&DamageType|piercing
-  --&FeatDamageType|FEAT
-  --=FeatDamage|[$FeatDamage.RollText]
-  --=CritFeatDamage|0
   --=DuelBonus|0
-
-  --/|*****Boolean Flags, see functions for damage assignment*****
-  --=HexbladeCurse|?{Hexblade's Curse|Yes,1|No,0}
-  --=BoomingBlade|?{Booming Blade|Yes,1|No,0}
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  --&FeatAName|Booming Blade
+  --=UseFeatA|?{Booming Blade|Yes,1|No,0}
+  --=FeatADmg|0
+  --=CritFeatADmg|0
+  --&FeatBName|None
+  --=UseFeatB|0
+  --=FeatBDmg|0
+  --=CritFeatBDmg|0
+  --=UseHexbladeCurse|?{Hexblade Curse|Yes,1|No,0}
+  --=HexbladeCurseDamage|[$ProficiencyBonus]
 
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
-  --=HexbladeCurseBonus|0
-  --=BoomingBladeDamage|0
-  --=CritBoomingBladeDamage|0
+  --=ProficiencyBonus|@{selected|pb}
+  --=FeatADamage|0
+  --=CritFeatADamage|0
+  --=FeatBDamage|0
+  --=CritFeatBDamage|0
+--=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+--=GlobalAttackMod|0
+  --=GlobalDamageMod|0
+  --=CritGlobalDamageMod|0
+  --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
 
   --/|*******************Main************************
-  -->ExecuteBoomingBlade|
-  -->ExecuteHexbladeCurse|
-  -->MakeAttack|
+    -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$DuelBonus] + [$MagicWeaponBonus]
     --+Attack Roll| [$AttackRoll]
+    -->CheckHexbladeCurseCrit|
+    -->CheckForGlobalAttackMods|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
     --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
     --+|[f18]Total Attack [$Attack][/f]
@@ -56,22 +67,140 @@
     --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
   --<|
 
+  --:CheckHexbladeCurseCrit|
+    --?[$UseHexbladeCurse] -gt [$Zero]| HexbladeCurseCrit
+  --<|
+
+  --:HexbladeCurseCrit|
+    --=CritRoll|19
+  --<|
+
+  --:CheckForGlobalAttackMods|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
+  --<|
+
+  --:CheckNextAttackMod|
+      --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
+      --Rnext|
+      --?"[*R:global_attack_name]" -ne [&NoModText]|CheckNextAttackMod
+  --<|
+
+  --:ApplyGlobalAttackMod|
+    --=GlobalAttackMod|[*R:global_attack_roll]
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:CheckForGlobalDamageMods|
+    --Rfirst|@{selected|character_id};repeating_damagemod
+    -->CheckNextDamageMod|
+  --<|
+
+  --:CheckNextDamageMod|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --Rnext|
+    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
+  --<|
+
+  --:CritApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --=CritGlobalDamageMod|[*R:global_damage_damage]
+    --=GlobalCritDmgTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
+    --+[*R:global_damage_name]|[$GlobalCritDmgTxt]
+  --<|
+
+  --:ApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --+[*R:global_damage_name]|[$GlobalDamageMod]
+  --<|
+
+  --:CheckHexBladeCurse|
+    --?[$UseHexbladeCurse] -gt [$Zero]| HexBladeCurseMsg
+  --<|
+
+  --:HexBladeCurseMsg|
+    --=HexbladeCurseDamage|[$ProficiencyBonus]
+    --+Hexblade's Curse|[$ProficiencyBonus]
+  --<|
+
+  --:CheckFeatA|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
+  --<|
+
+  --:CritFeatAMsg|
+    --=FeatADamage|[$FeatADmg]
+    --=CritFeatADamage|[$CritFeatADmg]
+    --=FeatADmgOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
+    --+[&FeatAName]|[$FeatADmgOpt]
+  --<|
+
+  --:FeatAMsg|
+    --=FeatADamage|[$FeatADmg]
+    --+[&FeatAName]|[$FeatADamage]
+  --<|
+
+  --:CheckFeatB|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
+  --<|
+
+  --:CritFeatBMsg|
+    --=FeatBDamage|[$FeatBDmg]
+    --=CritFeatBDamage|[$CritFeatBDmg]
+    --=FeatBDmgOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
+    --+[&FeatBName]|[$FeatBDmgOutput]
+  --<|
+
+  --:FeatBMsg|
+    --=FeatBDamage|1d6
+    --+[&FeatBName]|[$FeatBDamage]
+  --<|
+
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$BoomingBladeDamage] + [$HexbladeCurseBonus] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
-    --+Damage Roll|[$DamageDice] + [$CritDice] [CRIT]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$BoomingBladeDamage] [BOOM] + [$CritBoomingBladeDamage] [BMB] + [$HexbladeCurseBonus] [HEX] + [$FeatDamage] [FEAT] + [$CritFeatDamage] [FEAT] + [&MagicWeaponBonus] [MAGIC]
-    --+Damage Bonus|[$DamageBonuses]
+    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
+    --+Damage Roll|[$DamageRollText]
+    -->CheckForGlobalDamageMods|
+    -->CheckHexBladeCurse|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$HexbladeCurseDamage] + [$MagicWeaponBonus]
+    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] + [$ProficiencyBonus] + [$FeatDamage] + [&MagicWeaponBonus]
-    --+Damage Roll|[$DamageDice]
-    --=DamageBonuses|[$DamageModifier] [&AttackModifierType] + [$BoomingBladeDamage] [BOOM] + [$HexbladeCurseBonus] [HEX] + [$FeatDamage] [FEAT] + [&MagicWeaponBonus] [MAGIC]
-    --+Damage Bonus|[$DamageBonuses]
+        --+Damage Roll|[$DamageDice]
+    -->CheckForGlobalDamageMods|
+    -->CheckHexBladeCurse|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$HexbladeCurseDamage] + [&MagicWeaponBonus]
+    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
+  --<|
+
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
+  --<|
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowMagicBonus|
+    --+Magic Bonus|[$MagicWeaponBonus]
+  --<|
+
+  --:ShowProficiencyBonus|
+    --+Proficiency Bonus|[$ProficiencyBonus]
   --<|
 
   --:Miss|
@@ -109,23 +238,4 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
-  --:ExecuteBoomingBlade|
-    --?[$BoomingBlade] -gt [$Zero] |BoomingBladeMsg
-  --<|
-
-  --:BoomingBladeMsg|
-    --=BoomingBladeDamage|0
-    --=CritBoomingBladeDamage|0
-    --+Spell Attack: | Booming Blade
-  --<|
-
-  --:ExecuteHexbladeCurse|
-    --?[$HexbladeCurse] -gt [$Zero]| HexbladeCurseMsg
-  --<|
-
-  --:HexbladeCurseMsg|
-    --+Bonus: | Hexblade's Curse
-    --=CritRoll|19
-    --=HexbladeCurseBonus|[$ProficiencyBonus]
-  --<|
 }}
