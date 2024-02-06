@@ -78,7 +78,8 @@
 
     --:CaseSaveFails|
         --*|Save Fails!
-
+        --*|[*[%1%]:character_name] can't take reactions until its next turn.
+        --@token-mod|_ids [%1%] _ingore-selected _set statusmarkers|padlock
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!

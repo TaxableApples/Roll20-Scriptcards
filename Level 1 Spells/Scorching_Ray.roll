@@ -2,16 +2,21 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Scorching Ray
-  --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[INT]
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
-  --=ProficiencyBonus|@{selected|pb}
+  --&AttackModifierType|Intelligence
+  --=MagicWeaponBonus|0
   --=DamageDice|2d6
-  --=CritDice|2d6
+  --=CritDice|[$DamageDice.RollText]
   --&DamageType|fire
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  --&FeatAName|None
+  --=UseFeatA|0
+  --=FeatADamageValue|0
+  --&FeatBName|None
+  --=UseFeatB|0
+  --=FeatBDamageValue|0
   --&DamageFX|beam-fire
   --&Description|You create three rays of fire and hurl them at targets within range. You can hurl them at one target or several. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, you create one additional ray for each slot level above 2nd.
   
@@ -20,12 +25,25 @@
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
-  --=Damage|0
+  --=ProficiencyBonus|@{selected|pb}
+  --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=GlobalAttackMod|0
+  --=GlobalDamageMod|0
+  --=CritGlobalDamageMod|0
+  --=FeatBDamage|0
+  --=CritFeatBDamage|0
+  --=FeatADamage|0
+  --=CritFeatADamage|0
+  --&NoModText|NoRepeatingAttributeLoaded
+  --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
+  --=DiceRolled|[$AttackRoll.RollCount]
+  --=DroppedDice|[$AttackRoll.DroppedDice(1)]
+  --=KeptDice|[$AttackRoll.KeptDice(1)]
 
   --/|*******************Main************************
   -->MakeAttack|
@@ -38,45 +56,157 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus]
-    --+Attack Roll|[$AttackRoll]
-    --=AttackBonuses|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] PROF
-    --+Attack Bonuses|[$AttackBonuses]
-    --+|[f18]Total Attack[$Attack][/f]
+    -->CheckForAdvantage|
+    --+Attack Roll| [$AttackRoll]
+    -->CheckForGlobalAttackMods|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
+    --+Attack Bonus| [$AttackBonus]
+    --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:CheckForAdvantage|
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -lt [$KeptDice]|DisplayAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -gt [$KeptDice]|DisplayDisAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -eq [$KeptDice]|DisplaySnakeEyes
+  --<|
+
+  --:DisplayAdvantage|
+    --+|[f18]Advantage![/f]
+    --+| 
+  --<|
+
+  --:DisplayDisAdvantage|
+    --+|[f18]Disadvantage![/f]
+    --+| 
+  --<|
+
+  --:DisplaySnakeEyes|
+    --+[f18]|Snake Eyes![/f]
+    --+| 
+  --<|
+
+  --:CheckForGlobalAttackMods|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
+  --<|
+
+  --:CheckNextAttackMod|
+      --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
+      --Rnext|
+      --?"[*R:global_attack_name]" -ne [&NoModText]|CheckNextAttackMod
+  --<|
+
+  --:ApplyGlobalAttackMod|
+    --=GlobalAttackMod|[*R:global_attack_roll]
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:CheckForGlobalDamageMods|
+    --Rfirst|@{selected|character_id};repeating_damagemod
+    -->CheckNextDamageMod|
+  --<|
+
+  --:CheckNextDamageMod|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --Rnext|
+    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
+  --<|
+
+  --:CritApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --=CritGlobalDamageMod|[*R:global_damage_damage]
+    --=GlobalCritDamageTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
+    --+[*R:global_damage_name]|[$GlobalCritDamageTxt]
+  --<|
+
+  --:ApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --+[*R:global_damage_name]|[$GlobalDamageMod]
+  --<|
+
+  --:CheckFeatA|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
+  --<|
+
+  --:CritFeatAMsg|
+    --=FeatADamage|[$FeatADamageValue]
+    --=CritFeatADamage|[$FeatADamageValue.RollText]
+    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
+    --+[&FeatAName]|[$FeatADamageOpt]
+  --<|
+
+  --:FeatAMsg|
+    --=FeatADamage|[$FeatADamageValue]
+    --+[&FeatAName]|[$FeatADamage]
+  --<|
+
+  --:CheckFeatB|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
+  --<|
+
+  --:CritFeatBMsg|
+    --=FeatBDamage|[$FeatBDamageValue]
+    --=CritFeatBDamage|[$FeatBDamageValue.RollText]
+    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
+    --+[&FeatBName]|[$FeatBDamageOutput]
+  --<|
+
+  --:FeatBMsg|
+    --=FeatBDamage|[$FeatBDamageValue]
+    --+[&FeatBName]|[$FeatBDamage]
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] + [$FeatDamage] + [$CritFeatDamage]
-    --+Damage Roll|[$DamageDice] + [$CritDice]
-    --?[$FeatDamage] -ne 0|>ShowCriticalDamageBonus
-    --+|[f18][#ff0000]Critical hit[/#] for [$Damage] [&DamageType] damage![/f]
+    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
+    --+Damage Roll|[$DamageRollText]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
+    --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$FeatDamage]
     --+Damage Roll|[$DamageDice]
-    --?[$FeatDamage] -ne 0|>ShowDamageBonus
-    --+|[f18]Attack hit for [$Damage] [&DamageType] damage![/f]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [&MagicWeaponBonus] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
   --<|
 
-  --:ShowDamageBonus|
-    --=DamageBonuses|[$FeatDamage] [&FeatDamageType]
-    --+Damage Bonus|[$DamageBonuses]
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
   --<|
-  
-  --:ShowCriticalDamageBonus|
-    --=DamageBonus|[$FeatDamage] [&FeatDamageType]
-    --+Damage Bonus|[$DamageBonuses]
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowMagicBonus|
+    --+Magic Bonus|[$MagicWeaponBonus]
+  --<|
+
+  --:ShowProficiencyBonus|
+    --+Proficiency Bonus|[$ProficiencyBonus]
   --<|
 
   --:Miss|
     --=Damage|0
-    --+|[f18]The attack [#ff0000]missed[/#]![/f]
+    --+|[f18]Attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
@@ -107,7 +237,7 @@
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-  
+
   --:OutputTxt|
     --+|[f11][&Description][/f]
   --<|
@@ -115,4 +245,5 @@
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
+
 }}

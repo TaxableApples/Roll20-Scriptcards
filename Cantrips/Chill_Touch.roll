@@ -2,16 +2,21 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Chilltouch
-  --=CritRoll|20
   --=AttackModifier|@{selected|spellcasting_ability}
-  --=DamageModifier|0
-  --&AttackModifierType|[INT]
-  --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
-  --=ProficiencyBonus|@{selected|pb}
+  --&AttackModifierType|Intelligence
+  --=MagicWeaponBonus|0
   --=DamageDice|1d8
-  --=CritDice|1d8
+  --=CritDice|[$DamageDice.RollText]
   --&DamageType|necrotic
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  --&FeatAName|None
+  --=UseFeatA|0
+  --=FeatADamageValue|0
+  --&FeatBName|None
+  --=UseFeatB|0
+  --=FeatBDamageValue|0
   --&DamageFX|burn-death
   --&MarkerA|grab
   --&MarkerB|back-pain
@@ -22,12 +27,25 @@
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
-  --=Damage|0
+  --=ProficiencyBonus|@{selected|pb}
+  --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=GlobalAttackMod|0
+  --=GlobalDamageMod|0
+  --=CritGlobalDamageMod|0
+  --=FeatBDamage|0
+  --=CritFeatBDamage|0
+  --=FeatADamage|0
+  --=CritFeatADamage|0
+  --&NoModText|NoRepeatingAttributeLoaded
+  --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
+  --=DiceRolled|[$AttackRoll.RollCount]
+  --=DroppedDice|[$AttackRoll.DroppedDice(1)]
+  --=KeptDice|[$AttackRoll.KeptDice(1)]
 
   --/|*******************Main************************
   -->MakeAttack|
@@ -40,33 +58,162 @@
   
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Attack|[$AttackRoll] + [$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF]
-    --+|Attack Roll:[$Attack], Base: [$AttackRoll]
-    --+|[br]
+    -->CheckForAdvantage|
+    --+Attack Roll| [$AttackRoll]
+    -->CheckForGlobalAttackMods|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
+    --+Attack Bonus| [$AttackBonus]
+    --+|[f18]Total Attack [$Attack][/f]
+    --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
-    --?[$Attack.Total] -ge [$TargetAC]|Hit
-    --?[$Attack.Total] -lt [$TargetAC]|Miss
+    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:CheckForAdvantage|
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -lt [$KeptDice]|DisplayAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -gt [$KeptDice]|DisplayDisAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -eq [$KeptDice]|DisplaySnakeEyes
+  --<|
+
+  --:DisplayAdvantage|
+    --+|[f18]Advantage![/f]
+    --+| 
+  --<|
+
+  --:DisplayDisAdvantage|
+    --+|[f18]Disadvantage![/f]
+    --+| 
+  --<|
+
+  --:DisplaySnakeEyes|
+    --+[f18]|Snake Eyes![/f]
+    --+| 
+  --<|
+
+  --:CheckForGlobalAttackMods|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
+  --<|
+
+  --:CheckNextAttackMod|
+      --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
+      --Rnext|
+      --?"[*R:global_attack_name]" -ne [&NoModText]|CheckNextAttackMod
+  --<|
+
+  --:ApplyGlobalAttackMod|
+    --=GlobalAttackMod|[*R:global_attack_roll]
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:CheckForGlobalDamageMods|
+    --Rfirst|@{selected|character_id};repeating_damagemod
+    -->CheckNextDamageMod|
+  --<|
+
+  --:CheckNextDamageMod|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --Rnext|
+    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
+  --<|
+
+  --:CritApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --=CritGlobalDamageMod|[*R:global_damage_damage]
+    --=GlobalCritDamageTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
+    --+[*R:global_damage_name]|[$GlobalCritDamageTxt]
+  --<|
+
+  --:ApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --+[*R:global_damage_name]|[$GlobalDamageMod]
+  --<|
+
+  --:CheckFeatA|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
+  --<|
+
+  --:CritFeatAMsg|
+    --=FeatADamage|[$FeatADamageValue]
+    --=CritFeatADamage|[$FeatADamageValue.RollText]
+    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
+    --+[&FeatAName]|[$FeatADamageOpt]
+  --<|
+
+  --:FeatAMsg|
+    --=FeatADamage|[$FeatADamageValue]
+    --+[&FeatAName]|[$FeatADamage]
+  --<|
+
+  --:CheckFeatB|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
+  --<|
+
+  --:CritFeatBMsg|
+    --=FeatBDamage|[$FeatBDamageValue]
+    --=CritFeatBDamage|[$FeatBDamageValue.RollText]
+    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
+    --+[&FeatBName]|[$FeatBDamageOutput]
+  --<|
+
+  --:FeatBMsg|
+    --=FeatBDamage|[$FeatBDamageValue]
+    --+[&FeatBName]|[$FeatBDamage]
   --<|
 
   --:Crit|
-    --=Damage|[$DamageDice] + [$CritDice] [CRIT] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+[#ff0000]Critical Hit[/#]| for [$Damage] [&DamageType] damage!
+    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
+    --+Damage Roll|[$DamageRollText]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
+    --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
     -->CheckResistances|
     -->CheckUndead|
   --<|
   
   --:Hit|
-    --=Damage|[$DamageDice] + [$DamageModifier] [&AttackModifierType] + [$FeatDamage] [&FeatDamageType]
-    --+Hit| for [$Damage] [&DamageType] damage!
-    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|grab
+    --+Damage Roll|[$DamageDice]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [&MagicWeaponBonus] 
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    --*|A ghostly hand grasps the creature and it can't regain HP until the start of @{selected|token_name}'s next turn.
     -->CheckResistances|
     -->CheckUndead|
   --<|
 
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
+  --<|
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowMagicBonus|
+    --+Magic Bonus|[$MagicWeaponBonus]
+  --<|
+
+  --:ShowProficiencyBonus|
+    --+Proficiency Bonus|[$ProficiencyBonus]
+  --<|
+
   --:Miss|
     --=Damage|0
-    --+|[f18]The attack [#ff0000]missed[/#]![/f]
+    --+|[f18]Attack [#ff0000]missed[/#]![/f]
   --<|
 
   --:CheckResistances|
@@ -74,7 +221,7 @@
     --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
     --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
   --<|
-  
+    
   --:ApplyResistance|
     --=Resistance|[$Damage] \ 2
     --*|Creature is resistant to [&DamageType] damage!
@@ -95,7 +242,7 @@
   --<|
 
  --:ApplyDisadvantage|
-    --*|Creature is undead, and has disadvantage until the end of the players next turn!
+    --*|Creature is undead, and has disadvantage on attack rolls against @{selected|token_name}
     --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerB]
   --<|
    
@@ -106,7 +253,7 @@
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-  
+
   --:OutputTxt|
     --+|[f11][&Description][/f]
   --<|
@@ -114,4 +261,5 @@
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
+
 }}

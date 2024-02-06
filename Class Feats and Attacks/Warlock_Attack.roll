@@ -16,12 +16,10 @@
   --=CritFeatDamage|0
   --&FeatAName|Booming Blade
   --=UseFeatA|?{Booming Blade|Yes,1|No,0}
-  --=FeatADmg|0
-  --=CritFeatADmg|0
+  --=FeatADamageValue|0
   --&FeatBName|None
   --=UseFeatB|0
-  --=FeatBDmg|0
-  --=CritFeatBDmg|0
+  --=FeatBDamageValue|0
   --=UseHexbladeCurse|?{Hexblade Curse|Yes,1|No,0}
   --=HexbladeCurseDamage|[$ProficiencyBonus]
 
@@ -31,30 +29,34 @@
   --#emoteText|@{selected|token_name}
   --=TargetAC|@{target|npc_ac}
   --=ProficiencyBonus|@{selected|pb}
-  --=FeatADamage|0
-  --=CritFeatADamage|0
-  --=FeatBDamage|0
-  --=CritFeatBDamage|0
---=CritRoll|20
+  --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
---=GlobalAttackMod|0
+  --=GlobalAttackMod|0
   --=GlobalDamageMod|0
   --=CritGlobalDamageMod|0
+  --=FeatBDamage|0
+  --=CritFeatBDamage|0
+  --=FeatADamage|0
+  --=CritFeatADamage|0
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
+  --=DiceRolled|[$AttackRoll.RollCount]
+  --=DroppedDice|[$AttackRoll.DroppedDice(1)]
+  --=KeptDice|[$AttackRoll.KeptDice(1)]
 
   --/|*******************Main************************
-    -->MakeAttack|
+  -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   --X|
   
   --/|****************Subroutines********************
   --:MakeAttack|
+    -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckHexbladeCurseCrit|
     -->CheckForGlobalAttackMods|
@@ -63,8 +65,29 @@
     --+Attack Bonus| [$AttackBonus]
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
-    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
+    --?[$AttackRoll.Base] -ge [$CritRoll]|Crit
     --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:CheckForAdvantage|
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -lt [$KeptDice]|DisplayAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -gt [$KeptDice]|DisplayDisAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -eq [$KeptDice]|DisplaySnakeEyes
+  --<|
+
+  --:DisplayAdvantage|
+    --+|[f18]Advantage![/f]
+    --+| 
+  --<|
+
+  --:DisplayDisAdvantage|
+    --+|[f18]Disadvantage![/f]
+    --+| 
+  --<|
+
+  --:DisplaySnakeEyes|
+    --+[f18]|Snake Eyes![/f]
+    --+| 
   --<|
 
   --:CheckHexbladeCurseCrit|
@@ -97,8 +120,8 @@
   --<|
 
   --:CheckNextDamageMod|
-    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
-    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ge [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -lt [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
     --Rnext|
     --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
   --<|
@@ -106,8 +129,8 @@
   --:CritApplyGlobalDamageMod|
     --=GlobalDamageMod|[*R:global_damage_damage]
     --=CritGlobalDamageMod|[*R:global_damage_damage]
-    --=GlobalCritDmgTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
-    --+[*R:global_damage_name]|[$GlobalCritDmgTxt]
+    --=GlobalCritDamageTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
+    --+[*R:global_damage_name]|[$GlobalCritDamageTxt]
   --<|
 
   --:ApplyGlobalDamageMod|
@@ -125,36 +148,36 @@
   --<|
 
   --:CheckFeatA|
-    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
-    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
+    --?[$AttackRoll.Base] -ge [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
+    --?[$AttackRoll.Base] -lt [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|[$FeatADmg]
-    --=CritFeatADamage|[$CritFeatADmg]
-    --=FeatADmgOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADmgOpt]
+    --=FeatADamage|[$FeatADamageValue]
+    --=CritFeatADamage|[$FeatADamageValue.RollText]
+    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
+    --+[&FeatAName]|[$FeatADamageOpt]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|[$FeatADmg]
+    --=FeatADamage|[$FeatADamageValue]
     --+[&FeatAName]|[$FeatADamage]
   --<|
 
   --:CheckFeatB|
-    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
-    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
+    --?[$AttackRoll.Base] -ge [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
+    --?[$AttackRoll.Base] -lt [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
   --:CritFeatBMsg|
-    --=FeatBDamage|[$FeatBDmg]
-    --=CritFeatBDamage|[$CritFeatBDmg]
-    --=FeatBDmgOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDmgOutput]
+    --=FeatBDamage|[$FeatBDamageValue]
+    --=CritFeatBDamage|[$FeatBDamageValue.RollText]
+    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
+    --+[&FeatBName]|[$FeatBDamageOutput]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|1d6
+    --=FeatBDamage|[$FeatBDamageValue]
     --+[&FeatBName]|[$FeatBDamage]
   --<|
 
@@ -174,7 +197,7 @@
   --<|
   
   --:Hit|
-        --+Damage Roll|[$DamageDice]
+    --+Damage Roll|[$DamageDice]
     -->CheckForGlobalDamageMods|
     -->CheckHexBladeCurse|
     -->CheckFeatA|
@@ -226,7 +249,6 @@
   
   --:ApplyVulnerability|
     --=Vulnerability|[$Damage]
-    --+|[hr]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
   

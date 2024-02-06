@@ -2,21 +2,22 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Shortsword
-  --=AttackModifier|@{selected|dexterity_mod}
-  --=DamageModifier|@{selected|dexterity_mod}
-  --&AttackModifierType|Dexterity
+  --#title|Greataxe
+  --=AttackModifier|@{selected|strength_mod}
+  --=DamageModifier|@{selected|strength_mod}
+  --&AttackModifierType|Strength
   --=MagicWeaponBonus|0
-  --=DamageDice|1d6
+  --=DamageDice|1d12
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|piercing
+  --&DamageType|slashing
   --=DuelBonus|0
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
-  --&FeatAName|Sneak Attack
-  --=UseFeatA|?{Sneak Attack|Yes,1|No,0}
-  --=FeatADamageValue|1d6
+  --=Rage|?{Rage|Yes,2|No,0}
+  --&FeatAName|None
+  --=UseFeatA|0
+  --=FeatADamageValue|0
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
@@ -133,14 +134,14 @@
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|0
-    --=CritFeatADamage|0
+    --=FeatADamage|[$FeatADamageValue]
+    --=CritFeatADamage|[$FeatADamageValue.RollText]
     --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
     --+[&FeatAName]|[$FeatADamageOpt]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|0
+    --=FeatADamage|[$FeatADamageValue]
     --+[&FeatAName]|[$FeatADamage]
   --<|
 
@@ -150,14 +151,14 @@
   --<|
 
   --:CritFeatBMsg|
-    --=FeatBDamage|0
-    --=CritFeatBDamage|0
+    --=FeatBDamage|[$FeatBDamageValue]
+    --=CritFeatBDamage|[$FeatBDamageValue.RollText]
     --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
     --+[&FeatBName]|[$FeatBDamageOutput]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|0
+    --=FeatBDamage|[$FeatBDamageValue]
     --+[&FeatBName]|[$FeatBDamage]
   --<|
 
@@ -169,6 +170,7 @@
     -->CheckFeatB|
     --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$Rage] -ne 0|>ShowRage
     --?[$MagicBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
@@ -194,6 +196,10 @@
 
   --:ShowCritFeatDamage|
     --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowRage|
+    --+Rage|[$Rage]
   --<|
 
   --:ShowMagicBonus|
