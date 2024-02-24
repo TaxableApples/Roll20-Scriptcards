@@ -1,14 +1,14 @@
 !scriptcard {{ 
-
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Magic Missile
-  --=DamageDice|1d4
+  --#title|Divine Fury
+  --=DamageDice|1d6
+  --=PlayerLevel|@{selected|level}
   --=FeatDamage|0
-  --&FeatDamageType|[FEAT]
-  --&DamageType|force
-  --&DamageFX|beam-magic
-  --&Description|You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.
+  --&FeatDamageType|None
+  --&DamageType|radiant
+  --&DamageFX|burn-holy
+  --&Description|Starting when you choose this path at 3rd level, you can channel divine fury into your weapon strikes. While you're raging, the first creature you hit on each of your turns with a weapon attack takes extra damage equal to 1d6 + half your Barbarian level. The extra damage is necrotic or radiant; you choose the type of damage when you gain this feature.
   
   --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
@@ -31,7 +31,8 @@
 
   --/|****************Subroutines********************
   --:MakeAttack|
-    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType] + 1
+    --=HalfLevel|[$PlayerLevel] / 2
+    --=Damage|[$DamageDice] + [$FeatDamage] + [$HalfLevel]
     --+Hit| for [$Damage] [&DamageType] damage!
     -->CheckResistances|
   --<|
@@ -58,7 +59,7 @@
   --<|
 
   --:PlayEffects|
-    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --vtoken|@{target|token_id} [&DamageFX]
   --<|
 
   --:CalculateDamage|

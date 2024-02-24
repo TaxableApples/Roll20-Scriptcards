@@ -1,0 +1,102 @@
+!scriptcard  {{
+  --/|**********Customizable Variables***************
+  --#overridetemplate|wizard
+  --#title|Solitary Fireball
+  --&SpellSaveType|Dexterity
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=BonusDamage|0
+  --&BonusDamageType|[FEAT]
+  --=DamageDice|?{Spell Level?|2,6d6|3,7d6|4,8d6|5,9d6|6,10d6|7,11d6|8,12d6|9,13d6}
+  --&DamageType|fire
+  --&DamageFX|bomb-fire
+  --&Description|A bright streak flashes from your pointing finger to a point you choose within range, where it blossoms with a low roar to engulf a single creature in searing flame. That creature takes 6d6 fire damage, or half damage with a successful Dexterity saving throw. Solitary fireball does not ignite other flammable objects. At Higher Levels When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d6 for each slot level above 2nd.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->OutputText|
+  -->RollDamage|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+  --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+  --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
+  --X|
+  
+  --/|****************Subroutines********************
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+    --=DoubleDamage|[$Damage] * 2
+    --=HalfDamage|[$Damage] \ 2
+    --=QuarterDamage|[$Damage] \ 4
+  --<|
+
+  --:OutputText|
+    --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+    --+Damage Roll|[$DamageDice]
+    --?[$BonusDamage] -ne 0|>OutputBonusDamage
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
+  --<|
+
+  --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+  
+  --:CaseSaveFails|
+      --*|Save Fails!
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CaseSaveSucceeds|
+      --*|Save Suceeds!
+      -->CalculateDamage|[$HalfDamage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+  --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+  --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+  
+  --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<| 
+}}
