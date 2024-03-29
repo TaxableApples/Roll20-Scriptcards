@@ -5,41 +5,9 @@ Draconic Ancestry Breath Weapon
 Alchemist's Fire
 Holy Water
 
-**Cantrips**
-~~Acid Splash~~
-~~Chill Touch~~
-~~Eldritch Blast~~
-~~Fire Bolt~~
-~~Poison Spray~~
-~~Ray of Frost~~
-~~Sacred Flame~~
-~~Shocking Grasp~~
-~~Vicious Mockery~~
-
-**1st Level Spells**
-~~Burning Hands~~
-~~Guiding Bolt~~
-~~Hellish Rebuke~~
-Hunter’s Mark
-~~Inflict Wounds~~
-~~Magic Missile~~
-~~Thunderwave~~
-
 **2nd Level Spells**
-Acid Arrow
-~~Branding Smite~~
-~~Flame Blade~~
-~~Flaming Sphere~~
 Moonbeam
-~~Scorching Ray~~
-~~Shatter~~
-~~Spiritual Weapon~~
-
-**3rd Level Spells**
-~~Call Lightning~~
-~~Fireball~~
-~~Lightning Bolt~~
-~~Vampiric Touch~~
+Dragons Breath
 
 **4th Level Spells**
 Blight
