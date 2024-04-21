@@ -1,17 +1,17 @@
 !scriptcard {{
     --/|**********Customizable Variables***************
     --#overridetemplate|wizard
-    --#title|Fireball
+    --#title|Slow-Burn-Fireball
     --&SpellRadius|4
     --=SpellSaveDC|@{selected|spell_save_dc}
     --&SpellSaveType|Dexterity
     --=BonusDamage|0
     --&BonusDamageType|[FEAT]
-    --=DamageDice|?{Spell Level?|3,8d6|4,9d6|5,10d6|6,11d6|7,12d6|8,13d6|9,14d6}
+    --=DamageDice|?{Spell Level?|3,4d6|4,5d6|5,6d6|6,7d6|7,8d6|8,9d6|9,10d6}
     --&DamageType|fire
     --&DamageFX|beam-fire
     --&DamageFXB|nova-fire
-    --&Description|A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one. The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
+    --&Description|A bright streak flashes from your pointing finger to a point you choose within range, where it slowly ignites the air itself with phlogiston. Each creature in a 20-foot-radius sphere around the target point takes 4d6 fire damage, or half damage with a successful Dexterity saving throw. Every target that takes damage takes the same amount of damage again at the start of your next two turns unless it uses an action to put out the flames on its clothing, hair, and other accoutrements. Flammable objects in the area that arent being worn or carried are also ignited. At Higher LevelsWhen you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
 
     --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
