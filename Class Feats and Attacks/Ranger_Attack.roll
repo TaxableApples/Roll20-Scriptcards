@@ -10,7 +10,7 @@
   --=DamageDice|1d8
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|piercing
-  --=ArcheryBonus|0
+  --=ArcheryBonus|2
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
