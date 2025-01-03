@@ -3,14 +3,14 @@
   --/|****************Declarations*******************
   --#overridetemplate|wizard
   --#title|Great Axe
-  --=AttackModifier|@{selected|strength_mod}
-  --=DamageModifier|@{selected|strength_mod}
-  --&AttackModifierType|Strength
+  --=AttackModifier|@{selected|dexterity_mod}
+  --=DamageModifier|@{selected|dexterity_mod}
+  --&AttackModifierType|Dexterity
   --=MagicWeaponBonus|0
-  --=DamageDice|1d12
+  --=DamageDice|1d10
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|piercing
-  --=DuelBonus|0
+  --=DuelBonus|2
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
@@ -20,8 +20,8 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-  --=UseGreatWeaponFighting|1
-  --=UseSavageAttack|1
+  --=UseGreatWeaponFighting|0
+  --=UseSavageAttack|0
   --=SavageAttackDmg|[$DamageDice.RollText]
 
 

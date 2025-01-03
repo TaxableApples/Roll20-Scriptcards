@@ -1,0 +1,121 @@
+!scriptcard {{
+    --/|**********Customizable Variables***************
+    --#overridetemplate|wizard
+    --#title|Hail of Thorns
+    --&SpellRadius|1
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|0
+    --&BonusDamageType|[FEAT]
+    --=DamageDice|?{Spell Level?|1,1d10|2,2d10|3,3d10|4,4d10|5,5d10|6,6d10}
+    --&DamageType|magical-piercing
+    --&DamageFX|beam-smoke
+    --&DamageFXB|nova-smoke
+    --&Description|The next time you hit a creature with a ranged weapon attack before the spell ends, this spell creates a rain of thorns that sprouts from your ranged weapon or ammunition. In addition to the normal effect of the attack, the target of the attack and each creature within 5 feet of it must make a Dexterity saving throw. A creature takes 1d10 piercing damage on a failed save, or half as much damage on a successful one. At Higher LevelsIf you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d10 for each slot level above 1st (to a maximum of 6d10).
+
+    --/|****************DO NOT CHANGE******************
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
+
+    --/|*******************Main************************
+    -->RollDamage|
+    -->OutputText|
+    --%CurrentToken|foreach;AllTokens 
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        --?[$TargetDistance] -gt [&SpellRadius]|%
+        --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
+        --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+        --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
+        -->ReportDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+    --%|
+    -->PlayEffects|
+    -->PlayEffectsB|
+    --X|
+
+    --/|****************Subroutines********************
+    --:RollDamage|
+        --=Damage|[$DamageDice] + [$BonusDamage]
+        --=DoubleDamage|[$Damage] * 2
+        --=HalfDamage|[$Damage] \ 2
+        --=QuarterDamage|[$Damage] \ 4
+    --<|
+
+    --:OutputText|
+        --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+        --+Damage Roll|[$DamageDice]
+        --?[$BonusDamage] -ne 0|>OutputBonusDamage
+        --+|[br]
+        --+|[rbutton]Show Description::OutputDescription[/rbutton]
+    --<|
+
+    --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{target|token_id};[%1%]
+        --*[*[%1%]:character_name] Distance|[$TargetDistance]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|[%2%] + [*[%1%]:dexterity_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*Roll|[%3%]
+    --<|
+
+    --:SetSaveBool|
+        --&SaveBool|[%1%]
+    --<|
+
+    --:CaseSaveFails|
+        --*|Save Fails!
+        -->CalculateDamage|[$Damage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CaseSaveSucceeds|
+        --*|Save Suceeds!
+        -->CalculateDamage|[$HalfDamage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+    --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+
+    --:PlayEffects|
+        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --<|    
+
+    --:PlayEffectsB|
+        --vtoken|@{target|token_id} [&DamageFXB]
+    --<|  
+    
+    --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<|  
+}}
