@@ -2,15 +2,14 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Greatsword
+  --#title|Hooves
   --=AttackModifier|@{selected|strength_mod}
   --=DamageModifier|@{selected|strength_mod}
-  --&AttackModifierType|Dexterity
+  --&AttackModifierType|Strength
   --=MagicWeaponBonus|0
-  --=DamageDice|1d10
+  --=DamageDice|2d6
   --=CritDice|[$DamageDice.RollText]
-  --=DamageDiceArray|[$DamageDice.RolledDice]
-  --&DamageType|slashing
+  --&DamageType|bludgeoning
   --=DuelBonus|0
   --=ArcheryBonus|0
   --=OtherAttackBonus|0
@@ -24,9 +23,15 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-  --=UseGreatWeaponFighting|1
+  --=UseGreatWeaponFighting|0
   --=UseSavageAttack|0
   --=SavageAttackDmg|0
+
+  --@DamageDiceArray|[$DamageDice.RolledDice]
+
+  --%diceCheck|foreach;[@DamageDiceArray]
+    --+Rolled|[@DamageDiceArray(&diceCheck)]
+  --%
 
 
   --/|****************DO NOT CHANGE******************
