@@ -6,7 +6,7 @@
   --=AttackModifier|@{selected|dexterity_mod}
   --=DamageModifier|@{selected|dexterity_mod}
   --&AttackModifierType|Dexterity
-  --=MagicWeaponBonus|1
+  --=MagicWeaponBonus|2
   --=DamageDice|2d10
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|piercing
