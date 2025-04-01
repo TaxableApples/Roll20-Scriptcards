@@ -1,0 +1,37 @@
+!scriptcard {{ 
+
+  --/|****************Declarations*******************
+  --#overridetemplate|wizard
+  --#title|Aura of Vitality
+  --=HealingDice|2d8
+  --&SpellBonus|@{selected|spellcasting_ability}
+  --&Description|Healing energy radiates from you in an aura with a 30-foot radius. Until the spell ends, the aura moves with you, centered on you. You can use a bonus action to cause one creature in the aura (including you) to regain 2d6 hit points.
+  
+  --/|****************DO NOT CHANGE******************
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Healing|0
+  --=TotalHealing|0
+
+  --/|*******************Main************************
+  -->CalculateHealing|
+  -->ApplyHealing|@{target|token_id};1;[$TotalHealing]
+  --+Healing|[$HealingDice]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+ 
+  --:CalculateHealing|
+    --=Healing|[$HealingDice]
+    --=TotalHealing|[$Healing]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyHealing|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|+[%3%]!
+  --<|
+}}
