@@ -5,7 +5,12 @@
   --=AttackModifier|@{selected|intelligence_mod}
   --&AttackModifierType|Intelligence
   --=MagicWeaponBonus|0
-  --=DamageDice|1d10
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+  --=DamageDice|[$NumDice]d10
+  --*Level|[$Level]
+  --*NumDice|[$NumDice]
+  --=DamageDice|[$NumDice]d10
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|fire
   --&FeatDamageType|None
