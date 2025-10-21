@@ -2,10 +2,12 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Eldritch Blast
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Charisma
   --=MagicWeaponBonus|0
-  --=DamageDice|1d10
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+  --=DamageDice|[$NumDice]d10
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|force
   --=AgonizingBlast|0

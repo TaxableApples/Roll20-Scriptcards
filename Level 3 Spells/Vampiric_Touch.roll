@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Vampiric Touch
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Intelligence
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=MagicWeaponBonus|0
   --=DamageDice|?{Spell Level?|1,3d6|2,4d6|3,5d6|4,6d6|5,7d6|6,8d6|7,9d6|8,10d6|9,11d6}
   --=CritDice|[$DamageDice.RollText]

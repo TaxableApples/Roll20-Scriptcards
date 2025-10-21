@@ -7,7 +7,13 @@
   --=NPCSaveMod|@{target|wisdom_save_bonus}
   --=BonusDamage|0
   --&BonusDamageType|[FEAT]
-  --=DamageDice|?{Creature Taken Damage|Yes,1d12|No,1d8}
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+  --=D12Damage|[$NumDice]d12
+  --=D8Damage|[$NumDice]d8
+  --*D12Damage|[$D12Damage]
+  --*D8Damage|[$D8Damage]
+  --=DamageDice|?{Creature Taken Damage|Yes,[$D12Damage]|No,[$D8Damage]}
   --&DamageType|Necrotic
   --&DamageFX|burn-death
   --&StatusMarker|back-pain

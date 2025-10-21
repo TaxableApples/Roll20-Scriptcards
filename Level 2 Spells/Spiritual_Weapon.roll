@@ -5,7 +5,7 @@
   --#overridetemplate|wizard
   --#title|Spiritual Weapon
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Wisdom
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=DamageBonus|@{selected|spellcasting_ability}
   --=DamageDice|?{Spell Level?|2,1d8|3,2d8|4,3d8|5,4d8|6,5d8|7,6d8|8,7d8|9,8d8}
   --=CritDice|[$DamageDice.RollText]

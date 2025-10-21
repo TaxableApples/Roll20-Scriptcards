@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Guiding Bolt
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Wisdom
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=MagicWeaponBonus|0
   --=DamageDice|?{Spell Level?|1,4d6|2,5d6|3,6d6|4,7d6|5,8d6|6,9d6|7,10d6|8,11d6|9,12d6}
   --=CritDice|[$DamageDice.RollText]

@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Scorching Ray
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Intelligence
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=MagicWeaponBonus|0
   --=DamageDice|2d6
   --=CritDice|[$DamageDice.RollText]

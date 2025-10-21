@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Acid Arrow
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Intelligence
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=MagicWeaponBonus|0
   --=DamageDice|?{Spell Level?|2,4d4|3,5d4|4,6d4|5,7d4|6,8d4|7,9d4|8,10d4|9,11d4}
   --=CritDice|[$DamageDice.RollText]

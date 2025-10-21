@@ -7,7 +7,9 @@
   --=NPCSaveMod|@{target|constitution_save_bonus}
   --=BonusDamage|0
   --&BonusDamageType|[FEAT]
-  --=DamageDice|2d6
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+  --=DamageDice|[$NumDice]d6
   --&DamageType|radiant
   --&DamageFX|burn-holy
   --&Description|You utter a divine word, and burning radiance erupts from you. Each creature of your choice that you can see within range must succeed on a Constitution saving throw or take 1d6 radiant damage. The spells damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).

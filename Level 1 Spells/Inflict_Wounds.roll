@@ -3,7 +3,7 @@
   --#overridetemplate|wizard
   --#title|Inflict Wounds
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Intelligence
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=DamageDice|?{Spell Level?|1,3d10|2,4d10|3,5d10|4,6d10|5,7d10|6,8d10|7,9d10|8,10d10|9,11d10}
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|necrotic

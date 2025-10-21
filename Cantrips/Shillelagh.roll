@@ -5,7 +5,7 @@
   --#title|Shillelagh Quarterstaff
   --=AttackModifier|@{selected|spellcasting_ability}
   --=DamageModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Wisdom
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=MagicWeaponBonus|0
   --=DamageDice|1d8
   --=CritDice|[$DamageDice.RollText]

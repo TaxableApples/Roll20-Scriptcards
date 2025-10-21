@@ -2,10 +2,12 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Thornwhip
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
   --=AttackModifier|@{selected|spellcasting_ability}
-  --&AttackModifierType|Wisdom
   --=MagicWeaponBonus|0
-  --=DamageDice|1d8
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+  --=DamageDice|[$NumDice]d8
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|magic-piercing
   --&FeatDamageType|None
@@ -190,7 +192,6 @@
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     --&Movement|2g
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
 
   --:ShowFeatDamage|

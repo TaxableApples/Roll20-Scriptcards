@@ -2,15 +2,12 @@
   --/|**********Customizable Variables***************
   --#overridetemplate|wizard
   --#title|Firebolt
-  --=AttackModifier|@{selected|intelligence_mod}
-  --&AttackModifierType|Intelligence
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
+  --=AttackModifier|@{selected|spellcasting_ability}
   --=MagicWeaponBonus|0
   --=Level|@{selected|level}
   --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
   --=DamageDice|[$NumDice]d10
-  --*Level|[$Level]
-  --*NumDice|[$NumDice]
-  --=DamageDice|[$NumDice]d10
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|fire
   --&FeatDamageType|None

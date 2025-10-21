@@ -9,10 +9,16 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 
 **Requirements:**
 -You must have a Roll20 Pro Account.
+-I recommend using D&D 2014 Character sheets.
+-As of writing this, scriptcards are not compatible with D&D 2024 or Jumpgate.
 -Install the Following APIs into your game in the API MOD Menu: Scriptcards, TokenMod and Supernotes.
 
-**Custom Status Markers:**
-With my macros you can automatically control advantage and disadvantage rolls for saving throws based on two custom token status icons. You will need to create these and add them into your game on the game Launch Screen on the right side you will find a section called 'Token Marker Sets' You will need to create one called 'Advantage' and called 'Disadv'. Placing one of these status icons on a token will cause it to roll with advantage or disadvantage.
+**Optional Custom Setup:**
+For each of your characters, navigate to the Attributes & Abilities tab on their character sheet.
+-Under 'cust_spellcasting_ability', type their plain text spellcasting ability, for example "Wisdom". This is optional, but will allow the players to see their spellcasting ability is correct when inspecting attack rolls.
+
+Placing some custom status icons on a token will flag that creature to automatically roll with advantage or disadvantage on saving throws, but you will need to create these status icons.
+From the game Launch Screen on the right side you will find a section called 'Token Marker Sets' Create two tokens named: 'Advantage', 'Disadv'. The icon itself can be anything you want. I found dice icons with up and down arrows online that work great. 
 
 **Usage**
 -Macros can be pasted into the chat, and if you have the required APIs installed in Roll20, the script will execute.
