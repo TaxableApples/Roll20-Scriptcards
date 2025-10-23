@@ -1,7 +1,7 @@
 !scriptcard {{
     --/| There isn't anything to use from the character sheet that indicates if the targets are made of inorganic material, so I simply applied the disadvantage on elementals and constructs. An alternative idea would be to create an array of specific inorganic creature names that will be included in your campaign, and then check if the targets name exists in that array. This version works well enough for my use case.
 
-    --/|**********Customizable Variables***************
+    --/|**********Variables***************
     --#overridetemplate|wizard
     --#title|Shatter
     --&SpellRadius|2
@@ -13,8 +13,6 @@
     --&DamageType|thunder
     --&DamageFX|nova-smoke
     --&Description|A sudden loud ringing noise, painfully intense, erupts from a point of your choice within range. Each creature in a 10-foot-radius sphere centered on that point must make a Constitution saving throw. A creature takes 3d8 thunder damage on a failed save, or half as much damage on a successful one. A creature made of inorganic material such as stone, crystal, or metal has disadvantage on this saving throw. A nonmagical object that isnt being worn or carried also takes the damage if it is in the spells area. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot level above 2nd.
-
-    --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
     --~|array;pagetokens;AllTokens;@{selected|token_id}
@@ -43,6 +41,8 @@
         --*|[hr]
     --%|
     -->PlayEffects|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
 
     --/|****************Subroutines********************
@@ -57,8 +57,6 @@
         --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
         --+Damage Roll|[$DamageDice]
         --?[$BonusDamage] -ne 0|>OutputBonusDamage
-        --+|[br]
-        --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --<|
 
     --:OutputBonusDamage|

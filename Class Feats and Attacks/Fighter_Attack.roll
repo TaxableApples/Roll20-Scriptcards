@@ -1,6 +1,6 @@
 !scriptcard Attack {{
 
-  --/|****************Declarations*******************
+  --/|****************Variables*******************
   --#overridetemplate|wizard
   --#title|Greatsword
   --=AttackModifier|@{selected|strength_mod}
@@ -27,9 +27,6 @@
   --=UseGreatWeaponFighting|1
   --=UseSavageAttack|0
   --=SavageAttackDmg|0
-
-
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}

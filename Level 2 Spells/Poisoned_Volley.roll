@@ -1,5 +1,5 @@
 !scriptcard {{
-    --/|**********Customizable Variables***************
+    --/|**********Variables***************
     --#overridetemplate|wizard
     --#title|Poisoned Volley
     --&SpellRadius|2
@@ -13,8 +13,6 @@
     --&DamageFXB|nova-acid
     --&Marker|Poisoned
     --&Description|By drawing back and releasing an imaginary bowstring, you summon forth dozens of glowing green arrows. The arrows dissipate when they hit, but all creatures in a 20-foot square within range take 3d8 poison damage and become poisoned. A creature that makes a successful Constitution saving throw takes half as much damage and is not poisoned. At Higher LevelsWhen you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot level above 2nd.
-
-    --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
     --~|array;pagetokens;AllTokens;@{selected|token_id}
@@ -40,6 +38,8 @@
     --%|
     -->PlayEffects|
     -->PlayEffectsB|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
 
     --/|****************Subroutines********************
@@ -54,8 +54,6 @@
         --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
         --+Damage Roll|[$DamageDice]
         --?[$BonusDamage] -ne 0|>OutputBonusDamage
-        --+|[br]
-        --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --<|
 
     --:OutputBonusDamage|

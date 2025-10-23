@@ -8,6 +8,6 @@
         --&NpcAc|[*[&CurrentToken]:npc_ac]
         --*New HP value for [&TokenName]|[$NpcHp]
         --*Creature AC [&TokenName]|[&NpcAc]
-        --@token-mod|_ids [&CurrentToken] _set bar1_value|[$NpcHp] bar1_max|[$NpcHp] bar2_link|npc_ac  bar2_value|[&NpcAc] bar2_max|[&NpcAc] bar3_link|passive_wisdom
+        --@token-mod|_ids [&CurrentToken] _set bar1_value|[$NpcHp] bar1_max|[$NpcHp] bar2_link|npc_ac  bar2_value|[&NpcAc] bar2_max|[&NpcAc]
     --%|
 }}

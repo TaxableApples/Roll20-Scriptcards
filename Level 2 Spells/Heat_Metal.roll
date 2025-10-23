@@ -1,18 +1,18 @@
 !scriptcard  {{
+  --/|Note: This is just the save & damage roll.
+
   --/|**********Variables***************
   --#overridetemplate|wizard
-  --#title|Sacred Flame
-  --&SpellSaveType|Dexterity
+  --#title|Heat Metal
+  --&SpellSaveType|Constitution
   --=SpellSaveDC|@{selected|spell_save_dc}
-  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=NPCSaveMod|@{target|constitution_save_bonus}
   --=BonusDamage|0
   --&BonusDamageType|[FEAT]
-  --=Level|@{selected|level}
-  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
-  --=DamageDice|[$NumDice]d8
-  --&DamageType|radiant
-  --&DamageFX|bomb-holy  
-  --&Description|Flame-like radiance descends on a creature that you can see within range. The target must succeed on a Dexterity saving throw or take 1d8 radiant damage. The target gains no benefit from cover for this saving throw. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
+  --=DamageDice|?{Spell Level?|2,2d8|3,3d8|4,4d8|5,5d8|6,6d8|7,7d8|8,8d8|9,9d8}
+  --&DamageType|fire
+  --&DamageFX|burn-fire
+  --&Description|Choose a manufactured metal object, such as a metal weapon or a suit of heavy or medium metal armor, that you can see within range. You cause the object to glow red-hot. Any creature in physical contact with the object takes 2d8 fire damage when you cast the spell. Until the spell ends, you can use a bonus action on each of your subsequent turns to cause this damage again. If a creature is holding or wearing the object and takes the damage from it, the creature must succeed on a Constitution saving throw or drop the object if it can. If it doesn’t drop the object, it has disadvantage on attack rolls and ability checks until the start of your next turn. At Higher LevelsWhen you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot above 2nd.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -20,7 +20,8 @@
   --/|*******************Main************************
   -->OutputText|
   -->RollDamage|
-  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -ninc advantage 
+    -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
   --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
   --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
   --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
@@ -50,14 +51,14 @@
   --:OutputBonusDamage|
         --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
         --+Bonus Damage|[$AdditionalDamage]
-  --<|
+    --<|
 
   --:MakeSavingThrow|
     --=TargetSave|[%1%]+[$NPCSaveMod]
     --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
     --*Roll|[%2%]
   --<|
-    
+
   --:SetSaveBool|
     --&SaveBool|[%1%]
   --<|
@@ -70,32 +71,35 @@
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
       --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
   --<|
-  
+
   --:CaseSaveSucceeds|
       --*|Save Suceeds!
       --+|[#ff0000]Save Succeeded![/#]
-      -->CalculateDamage|0;Normal
+      -->CalculateDamage|[$HalfDamage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
   --<|
 
   --:CalculateDamage|
         --=TotalDamage|[%1%]
         --&CreatureResist|[%2%]
-  --<|
+    --<|
 
   --:ReportDamage|
-        --*Resistance| [&CreatureResist]
+        --*Resistance|[&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 
   --:ApplyDamage|
         --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
-  --<|
+    --<|
   
   --:PlayEffects|
     --vtoken|@{target|token_id} [&DamageFX]
   --<|
   
   --:OutputDescription|
-    --+|[f11][&Description][/f]
-  --<|
+        --+|[f11][&Description][/f]
+    --<| 
 }}

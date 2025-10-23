@@ -1,6 +1,6 @@
 !scriptcard Attack {{
 
-  --/|****************Declarations*******************
+  --/|****************Variables*******************
   --#overridetemplate|wizard
   --#title|+1 Spear
   --=AttackModifier|@{selected|strength_mod}
@@ -30,8 +30,6 @@
   --%diceCheck|foreach;[@DamageDiceArray]
     --+Rolled|[@DamageDiceArray(&diceCheck)]
   --%
-
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}

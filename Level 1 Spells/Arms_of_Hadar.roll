@@ -1,5 +1,5 @@
 !scriptcard {{
-    --/|**********Customizable Variables***************
+    --/|**********Variables***************
     --#overridetemplate|wizard
     --#title|Arms of Hadar
     --&SpellRadius|2
@@ -11,8 +11,6 @@
     --&DamageType|necrotic
     --&DamageFX|nova-death
     --&Description|You invoke the power of Hadar, the Dark Hunger. Tendrils of dark energy erupt from you and batter all creatures within 10 feet of you. Each creature in that area must make a Strength saving throw. On a failed save, a target takes 2d6 necrotic damage and cant take reactions until its next turn. On a successful save, the creature takes half damage, but suffers no other effect. At Higher LevelsWhen you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d6 for each slot level above 1st.
-
-    --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
     --&CasterToken|@{selected|token_id}
@@ -39,6 +37,8 @@
         --*|[hr]
     --%|
     -->PlayEffects|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
 
     --/|****************Subroutines********************
@@ -53,8 +53,6 @@
         --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
         --+Damage Roll|[$DamageDice]
         --?[$BonusDamage] -ne 0|>OutputBonusDamage
-        --+|[br]
-        --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --<|
 
     --:OutputBonusDamage|

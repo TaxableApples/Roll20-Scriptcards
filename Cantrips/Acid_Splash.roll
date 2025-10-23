@@ -1,5 +1,5 @@
 !scriptcard  {{
-  --/|**********Customizable Variables***************
+  --/|**********Variables***************
   --#overridetemplate|wizard
   --#title|Acid Splash
   --&SpellSaveType|Dexterity
@@ -13,8 +13,6 @@
   --&DamageType|acid
   --&DamageFX|bomb-acid
   --&Description|You hurl a bubble of acid. Choose one creature within range, or choose two creatures within range that are within 5 feet of each other. A target must succeed on a Dexterity saving throw or take 1d6 acid damage. This spells damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).
-  
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -31,6 +29,8 @@
   -->ReportDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->PlayEffects|
+  --+|[br]
+  --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -45,8 +45,6 @@
     --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
     --+Damage Roll|[$DamageDice]
     --?[$BonusDamage] -ne 0|>OutputBonusDamage
-    --+|[br]
-    --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --<|
 
   --:OutputBonusDamage|

@@ -1,5 +1,5 @@
 !scriptcard  {{
-  --/|**********Customizable Variables***************
+  --/|**********Variables***************
   --#overridetemplate|wizard
   --#title|Vicious Mockery
   --&SpellSaveType|Wisdom
@@ -14,8 +14,6 @@
   --&DamageFX|burn-charm
   --&StatusMarker|Disadv
   --&Description|You unleash a string of insults laced with subtle enchantments at a creature you can see within range. If the target can hear you (though it need not understand you), it must succeed on a Wisdom saving throw or take 1d4 psychic damage and have disadvantage on the next attack roll it makes before the end of its next turn. This spells damage increases by 1d4 when you reach 5th level (2d4), 11th level (3d4), and 17th level (4d4).
-
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -32,6 +30,8 @@
   -->ReportDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
   -->PlayEffects|
+  --+|[br]
+  --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -46,8 +46,6 @@
     --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
     --+Damage Roll|[$DamageDice]
     --?[$BonusDamage] -ne 0|>OutputBonusDamage
-    --+|[br]
-    --+|[rbutton]Show Description::OutputDescription[/rbutton]
   --<|
     
   --:OutputBonusDamage|

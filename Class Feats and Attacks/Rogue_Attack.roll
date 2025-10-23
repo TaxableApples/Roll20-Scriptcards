@@ -1,6 +1,6 @@
 !scriptcard  {{
 
-  --/|****************Declarations*******************
+  --/|****************Variables*******************
   --#overridetemplate|wizard
   --#title|Shortsword
   --=AttackModifier|@{selected|dexterity_mod}
@@ -20,8 +20,6 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}

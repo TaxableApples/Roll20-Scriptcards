@@ -1,5 +1,5 @@
 !scriptcard  {{
-  --/|**********Customizable Variables***************
+  --/|**********Variables***************
   --#overridetemplate|wizard
   --#title|Shocking Grasp
   --&AttackModifierType|@{selected|cust_spellcasting_ability}
@@ -20,12 +20,9 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-  
   --&DamageFX|missile-frost
   --&MarkerA|stopwatch
   --&Description|Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have advantage on the attack roll if the target is wearing armor made of metal. On a hit, the target takes 1d8 lightning damage, and it cant take reactions until the start of its next turn. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
-  
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}

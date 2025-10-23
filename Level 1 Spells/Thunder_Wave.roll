@@ -1,5 +1,5 @@
 !scriptcard {{
-    --/|**********Customizable Variables***************
+    --/|**********Variables***************
     --#overridetemplate|wizard
     --#title|Thunder Wave
     --&SpellRadius|3
@@ -11,8 +11,6 @@
     --&DamageType|thunder
     --&DamageFX|nova-smoke
     --&Description|A wave of thunderous force sweeps out from you. Each creature in a 15-foot cube originating from you must make a Constitution saving throw. On a failed save, a creature takes 2d8 thunder damage and is pushed 10 feet away from you. On a successful save, the creature takes half as much damage and isnt pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from you by the spells effect, and the spell emits a thunderous boom audible out to 300 feet. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d8 for each slot level above 1st.
-
-    --/|****************DO NOT CHANGE******************
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
     --&CasterToken|@{selected|token_id}
@@ -40,6 +38,8 @@
         --*|[hr]
     --%|
     -->PlayEffects|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
 
     --/|****************Subroutines********************
@@ -54,8 +54,6 @@
         --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
         --+Damage Roll|[$DamageDice]
         --?[$BonusDamage] -ne 0|>OutputBonusDamage
-        --+|[br]
-        --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --<|
 
     --:OutputBonusDamage|

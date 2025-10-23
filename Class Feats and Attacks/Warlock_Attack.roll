@@ -1,6 +1,6 @@
 !scriptcard  {{
 
-  --/|****************Declarations*******************
+  --/|****************Variables*******************
   --#overridetemplate|wizard
   --#title|Hexblade Rapier
   --=AttackModifier|@{selected|charisma_mod}
@@ -22,8 +22,6 @@
   --=FeatBDamageValue|1d6
   --=UseHexbladeCurse|?{Hexblade Curse|Yes,1|No,0}
   --=HexbladeCurseDamage|[$ProficiencyBonus]
-
-  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
