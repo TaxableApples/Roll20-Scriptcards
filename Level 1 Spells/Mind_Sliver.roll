@@ -65,6 +65,7 @@
   
   --:CaseSaveFails|
       --*|Save Fails!
+      --+|Save Failed!
       -->CalculateDamage|[$Damage];Normal
       --?[$TargetSave] -lt [$SpellSaveDC]|ApplyStatusMarker
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
@@ -74,6 +75,7 @@
 
   --:CaseSaveSucceeds|
       --*|Save Suceeds!
+      --+|[#ff0000]Save Succeeded![/#]
       -->CalculateDamage|0;Normal
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Vulnerable!
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;0;Resistant!

@@ -11,7 +11,10 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 -You must have a Roll20 Pro Account.
 -I recommend using D&D 2014 Character sheets.
 -As of writing this, scriptcards are not compatible with D&D 2024 or Jumpgate.
--Install the Following APIs into your game in the API MOD Menu: Scriptcards, TokenMod and Supernotes.
+-Install the Following APIs into your game in the API MOD Menu: 
+    --Scriptcards 
+    --TokenMod 
+    --Supernotes
 
 **Optional Custom Setup:**
 For each of your characters, navigate to the Attributes & Abilities tab on their character sheet.

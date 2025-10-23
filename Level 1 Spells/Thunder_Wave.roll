@@ -84,6 +84,7 @@
 
     --:CaseSaveFails|
         --*|Save Fails!
+        --+|Save Failed!
         --@token-mod|_ignore-selected _ids [%1%] _move =[$TargetAngleRounded]|2g
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
@@ -93,6 +94,7 @@
      
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
+        --+|[#ff0000]Save Succeeded![/#]
         -->CalculateDamage|[$HalfDamage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!

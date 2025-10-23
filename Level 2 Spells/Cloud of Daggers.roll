@@ -60,6 +60,8 @@
     --<|
 
     --:CaseSaveFails|
+        --*|Save Fails!
+        --+|Save Failed!
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
