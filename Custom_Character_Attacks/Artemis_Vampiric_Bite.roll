@@ -1,19 +1,19 @@
 !scriptcard Attack {{
 
-  --/|****************Variables*******************
+  --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|+1 Spear
-  --=AttackModifier|@{selected|strength_mod}
-  --=DamageModifier|@{selected|strength_mod}
-  --&AttackModifierType|Strength
+  --#title|Vampiric Bite
+  --=AttackModifier|@{selected|constitution_mod}
+  --=DamageModifier|@{selected|constitution_mod}
+  --&AttackModifierType|Constitution
   --=MagicWeaponBonus|0
-  --=DamageDice|?{Versatile Weapon|One-Handed,1d8|Two-Handed,1d10}
+  --=DamageDice|2d4
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|bludgeoning
+  --&DamageType|piercing
   --=DuelBonus|0
   --=ArcheryBonus|0
-  --=OtherAttackBonus|0
-  --&OtherAttackBonusName|None
+  --=OtherAttackBonus|?{Vampiric Bite Bonus|0,0|1,1|2,2|3,3|4,4|5,5|6,6|7,7|8,8|9,9|10,10|11,11|12,12|13,13|14,14|15,15|16,16|17,17|18,18|19,19|20,20}
+  --&OtherAttackBonusName|Vampiric Bite Bonus
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
@@ -25,11 +25,7 @@
   --=FeatBDamageValue|0
   --=UseGreatWeaponFighting|0
   --=UseSavageAttack|0
-  --=SavageAttackDmg|0
-  --@DamageDiceArray|[$DamageDice.RolledDice]
-  --%diceCheck|foreach;[@DamageDiceArray]
-    --+Rolled|[@DamageDiceArray(&diceCheck)]
-  --%
+  --=SavageAttackDmg|[$DamageDice.RollText]
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -165,6 +161,10 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  -<|
+
   --:SavageAttackMsg|
     --+Savage Attack|[$SavageAttackDmg]
     --=ApplySavageAttack|[$SavageAttackDmg]
@@ -207,7 +207,7 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --?[$UseSavageAttack] -gt 0|>SavageAttackMsg
+    -->CheckSavageAttack|
     --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
     --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 

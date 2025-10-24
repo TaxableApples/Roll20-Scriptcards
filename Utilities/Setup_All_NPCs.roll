@@ -1,7 +1,9 @@
 !scriptcard {{
+    --#overridetemplate|wizard
+    --#title|Setting Up Tokens
+
     --~|array;selectedtokens;AllSelectedTokens;
-    --#title|Selected Token Setup
-    
+
     --%CurrentToken|foreach;AllSelectedTokens 
         --&TokenName|[*[&CurrentToken]:character_name]
         --=NpcHp|[*[&CurrentToken]:npc_hpformula]

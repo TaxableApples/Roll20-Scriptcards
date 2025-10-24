@@ -14,7 +14,7 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 -Install the Following APIs into your game in the API MOD Menu: 
     --Scriptcards 
     --TokenMod 
-    --Supernotes ( Not required if you remove the line "--#overridetemplate|wizard". See Supernotes docs to change the card-style: https://app.roll20.net/forum/post/11950821/supernotes-0-dot-2-4-now-with-even-more-templates/?pagenum=1).
+    --Supernotes, not required if you remove the line "--#overridetemplate|wizard". See Supernotes docs to change the card-style [here](https://app.roll20.net/forum/post/11950821/supernotes-0-dot-2-4-now-with-even-more-templates/?pagenum=1).
 
 -Once you have placed some tokens on the battlefield, find the macro called 'Setup_All_NPCs.roll' under the 'Utilities' directory.
     --Select all tokens and run this macro.

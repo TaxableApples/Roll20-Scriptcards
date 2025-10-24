@@ -1,30 +1,32 @@
 !scriptcard {{
-    --/| Note: This macro is designed to be placed on a spell effect token.
-    
-    --/|**********Variables*************** 
+    --/|**********Variables***************
     --#overridetemplate|wizard
-    --#title|Moonbeam
+    --#title|Thunder Wave
     --&SpellRadius|1
     --=SpellSaveDC|@{selected|spell_save_dc}
-    --&SpellSaveType|Dexterity
-    --=BonusDamage|0
-    --&BonusDamageType|[FEAT]
-    --=DamageDice|?{Spell Level?|2,2d10|3,3d10|4,4d10|5,5d10|6,6d10|7,7d10|8,8d10|9,9d10}
-    --&DamageType|radiant
-    --&DamageFX|burn-smoke
-    --&Description|A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high cylinder centered on a point within range. Until the spell ends, dim light fills the cylinder. When a creature enters the spell’s area for the first time on a turn or starts its turn there, it is engulfed in ghostly flames that cause searing pain, and it must make a Constitution saving throw. It takes 2d10 radiant damage on a failed save, or half as much damage on a successful one. A shapechanger makes its saving throw with disadvantage. If it fails, it also instantly reverts to its original form and can’t assume a different form until it leaves the spell’s light. On each of your turns after you cast this spell, you can use an action to move the beam up to 60 feet in any direction. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d10 for each slot level above 2nd.
+    --&SpellSaveType|Constitution
+    --=FeatDamage|0
+    --&FeatDamageType|[FEAT]
+    --=Level|@{selected|level}
+    --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
+    --=DamageDice|[$NumDice]d6
+    --&DamageType|thunder
+    --&DamageFX|nova-smoke
+    --&Description|You create a burst of thunderous sound that can be heard up to 100 feet away. Each creature within range, other than you, must succeed on a Constitution saving throw or take 1d6 thunder damage. The spell’s damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
-    --~|array;pagetokens;AllTokens;@{selected|token_id}
+    --&CasterToken|@{selected|token_id}
+    --~|array;pagetokens;AllTokens;[&CasterToken]
 
     --/|*******************Main************************
     -->RollDamage|
     -->OutputText|
     --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq [&CasterToken]|%
         --&CharName|[*[&CurrentToken]:character_name]
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
-        --?[$TargetDistance] -gt [&SpellRadius]|%
+        --?[$TargetDistance] -gt [&SpellRadius]|%   
         --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
             -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
         --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
@@ -43,7 +45,7 @@
 
     --/|****************Subroutines********************
     --:RollDamage|
-        --=Damage|[$DamageDice] + [$BonusDamage]
+    --=Damage|[$DamageDice] + [$BonusDamage]
         --=DoubleDamage|[$Damage] * 2
         --=HalfDamage|[$Damage] \ 2
         --=QuarterDamage|[$Damage] \ 4
@@ -62,11 +64,10 @@
 
     --:GetTargetDistance|
         --~TargetDistance|distance;@{selected|token_id};[%1%]
-        --*[*[%1%]:character_name] Distance|[$TargetDistance]
     --<|
 
     --:MakeSavingThrow|
-        --=TargetSave|[%2%] + [*[%1%]:dexterity_save_bonus]
+        --=TargetSave|[%2%] + [*[%1%]:constitution_save_bonus]
         --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
         --*Roll|[%3%]
     --<|
@@ -83,7 +84,7 @@
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
         --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
-
+     
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
         --+|[#ff0000]Save Succeeded![/#]
@@ -108,9 +109,9 @@
     --<|
 
     --:PlayEffects|
-        --vtoken|@{selected|token_id} [&DamageFXB]
-    --<|  
-    
+        --vtoken|@{selected|token_id} [&DamageFX]
+    --<|
+
     --:OutputDescription|
         --+|[f11][&Description][/f]
     --<|  

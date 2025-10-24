@@ -1,6 +1,6 @@
 !scriptcard  {{
   --/|TRIGGER_REPLACEMENTS
-  --#overridetemplate|wizard
+  --#overridetemplate|scroll
   --&CharName|[*[&AttributeOld_characterid]:character_name]
   --#title|Player HP Event
   --=ParseOldHp|[&AttributeOldcurrent]

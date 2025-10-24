@@ -1,0 +1,8 @@
+!Spawn {{
+--name|Thrash The Lumberjack
+--size|2,2
+--bar1|@{Thrash The Lumberjack|hp}/@{Thrash The Lumberjack|hp|max} KeepLink
+--bar2|@{Thrash The Lumberjack|ac} KeepLink
+}}
+
+!token-mod --set layer|gmlayer
