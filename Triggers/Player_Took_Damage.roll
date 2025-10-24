@@ -1,0 +1,31 @@
+!scriptcard  {{
+  --/|TRIGGER_REPLACEMENTS
+  --#overridetemplate|wizard
+  --&CharName|[*[&AttributeOld_characterid]:character_name]
+  --#title|[&CharName]
+  --=ParseOldHp|[&AttributeOldcurrent]
+  --=ParseNewHp|[&AttributeNewcurrent]
+  --=Damage|[$ParseOldHp]-[$ParseNewHp]
+  --=Healing|[$ParseNewHp]-[$ParseOldHp]
+
+  --/|*******************Main************************
+  -->CheckForDamage|
+  --X|
+
+  --/|****************Subroutines********************
+
+  --:CheckForDamage|
+    --?[$Damage] -gt 0|PlayerTookDamage
+    --?[$Healing] -gt 0|PlayerHealed
+  --<|
+
+  --:PlayerTookDamage|
+    --+|Took Damage!
+    --*[&CharName] Took Damage|[$Damage]
+  --<|
+
+  --:PlayerHealed|
+    --+|Healed!
+    --*[&CharName] Healed|[$Healing]
+  --<|
+}}
