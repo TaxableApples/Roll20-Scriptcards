@@ -2,7 +2,7 @@
   --/|TRIGGER_REPLACEMENTS
   --#overridetemplate|wizard
   --&CharName|[*[&AttributeOld_characterid]:character_name]
-  --#title|[&CharName]
+  --#title|Player HP Event
   --=ParseOldHp|[&AttributeOldcurrent]
   --=ParseNewHp|[&AttributeNewcurrent]
   --=Damage|[$ParseOldHp]-[$ParseNewHp]
@@ -10,22 +10,40 @@
 
   --/|*******************Main************************
   -->CheckForDamage|
+  -->CheckPlayerUnconscious|
   --X|
 
   --/|****************Subroutines********************
 
   --:CheckForDamage|
-    --?[$Damage] -gt 0|PlayerTookDamage
-    --?[$Healing] -gt 0|PlayerHealed
+    --?[$Damage] -gt 0|OutputPlayerTookDamage
+    --?[$Healing] -gt 0|OutputPlayerHealed
   --<|
 
-  --:PlayerTookDamage|
-    --+|Took Damage!
-    --*[&CharName] Took Damage|[$Damage]
+  --:OutputPlayerTookDamage|
+    --+|[br]
+    --+|[#ff0000][&CharName] took damage![/#]
+    --*|[&CharName] took [$Damage] Damage
   --<|
 
-  --:PlayerHealed|
-    --+|Healed!
-    --*[&CharName] Healed|[$Healing]
+  --:OutputPlayerHealed|
+    --+|[br]
+    --+|[#06402B][&CharName] healed![/#]
+    --*[&CharName] healed|[$Healing]
+  --<|
+
+  --:CheckPlayerUnconscious|
+    --?[$ParseNewHp] -le 0|OutputPlayerUnconscious
+    --?[$ParseOldHp] -le 0|OutputPlayerRegainedConsciousness
+  --<|
+
+  --:OutputPlayerUnconscious|
+    --+|[br]
+    --+|[#ff0000][&CharName] fell unconscious![/#]
+  --<|
+
+  --:OutputPlayerRegainedConsciousness|
+    --+|[br]
+    --+|[#06402B][&CharName] regained consciousness![/#]
   --<|
 }}
