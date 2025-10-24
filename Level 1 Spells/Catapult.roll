@@ -1,0 +1,102 @@
+!scriptcard  {{
+  --/|**********Variables***************
+  --#overridetemplate|wizard
+  --#title|Catapult
+  --&SpellSaveType|Dexterity
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|dexterity_save_bonus}
+  --=BonusDamage|0
+  --&BonusDamageType|[FEAT]
+  --=DamageDice|?{Spell Level?|1,3d8|2,4d8|3,5d8|4,6d8|5,7d8|6,8d8|7,9d8|8,10d8|9,11d8}
+  --&DamageType|fire
+  --&DamageFX|bomb-smoke
+  --&Description|Choose one object weighing 1 to 5 pounds within range that isn’t being worn or carried. The object flies in a straight line up to 90 feet in a direction you choose before falling to the ground, stopping early if it impacts against a solid surface. If the object would strike a creature, that creature must make a Dexterity saving throw. On a failed save, the object strikes the target and stops moving. When the object strikes something, the object and what it strikes each take 3d8 bludgeoning damage. At Higher LevelsWhen you cast this spell using a spell slot of 2nd level or higher, the maximum weight of objects that you can target with this spell increases by 5 pounds, and the damage increases by 1d8, for each slot level above 1st.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->OutputText|
+  -->RollDamage|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+  --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+  --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
+  --+|[br]
+  --+|[rbutton]Show Description::OutputDescription[/rbutton]
+  --X|
+  
+  --/|****************Subroutines********************
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+    --=DoubleDamage|[$Damage] * 2
+    --=HalfDamage|[$Damage] \ 2
+    --=QuarterDamage|[$Damage] \ 4
+  --<|
+
+  --:OutputText|
+    --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+    --+Damage Roll|[$DamageDice]
+    --?[$BonusDamage] -ne 0|>OutputBonusDamage
+  --<|
+
+  --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+  
+  --:CaseSaveFails|
+      --*|Save Fails!
+      --+|Save Failed!
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CaseSaveSucceeds|
+      --*|Save Suceeds!
+      --+|[#ff0000]Save Succeeded![/#]
+      -->CalculateDamage|[$HalfDamage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+  --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+  --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+  
+  --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<| 
+}}

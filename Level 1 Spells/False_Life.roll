@@ -1,0 +1,26 @@
+!scriptcard {{ 
+  --/|****************Declarations*******************
+  --#overridetemplate|wizard
+  --#title|False Life
+  --=HealingDice|1d4
+  --=SpellBonus|?{Spell Level?|1,4|2,9|3,14|4,19|5,24|6,29|7,34|8,39|9,44}
+  --&Description|You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before you can use it again.
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|@{selected|token_name}
+
+  --/|*******************Main************************
+  -->CalculateHealing|
+  --+|Roll [$HealingDice] + [$SpellBonus]
+  --+|[f18]Total Temp HP [$Healing][/f]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+ 
+  --:CalculateHealing|
+    --=Healing|[$HealingDice]+[$SpellBonus]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+}}
