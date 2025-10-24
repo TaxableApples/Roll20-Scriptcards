@@ -1,0 +1,139 @@
+!scriptcard  {{
+  --/|**********Variables***************
+  --/|*******Note: this spell kinda sucks. I totally rewrote it to treat it more like booming blade and the bleed itself as a status effect on the monster: Remove concentration, Add melee weapon requirement, change duration to 1 round.
+  --#overridetemplate|wizard
+  --#title|Bleed
+  --&SpellSaveType|Constitution
+  --=SpellSaveDC|@{selected|spell_save_dc}
+  --=NPCSaveMod|@{target|constitution_save_bonus}
+  --=BonusDamage|0
+  --&BonusDamageType|[FEAT]
+  --=DamageDice|?{Spell Level?|1,1d4|2,2d4|3,3d4|4,4d4|5,5d4|6,6d4|7,7d4|8,8d4|9,9d4}
+  --&DamageType|necrotic
+  --&DamageFX|bomb-blood
+  --&Description|You brandish the weapon used in the spell's casting and make a melee attack with it against one creature within 5 feet of you. Crackling energy coats the weapon. On a hit, the weapon deals an extra 1d4 necrotic damage and the creature must make a Constitution saving throw. On a failed save, the creature suffers a bleeding wound. Each time the creature takes damage while it suffers from a bleeding wound, it takes an extra 1d4 necrotic damage. Any creature can take an action to stanch the bleeding wound by succeeding on a Wisdom (Medicine) check against your spell save DC. The wound also closes if the target receives magical healing. This spell has no effect on undead or constructs. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the damage increases by 1d4 for each slot level above 1st.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --&MarkerA|Bloody
+  --=isUndeadOrConstruct|0
+
+  --/|*******************Main************************
+  -->OutputText|
+  -->CheckUndead|
+  -->CheckConstruct|
+  -->RollDamage|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+  --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+  --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
+  --+|[br]
+  --+|[rbutton]Show Description::OutputDescription[/rbutton]
+  --X|
+  
+  --/|****************Subroutines********************
+  --:CheckUndead|
+    --?"@{target|npc_type}" -inc "undead" |NegateDamageUndead
+  --<|
+
+  --:CheckConstruct|
+    --?"@{target|npc_type}" -inc "construct" |NegateDamageConstruct
+  --<|
+
+  --:NegateDamageUndead|
+    --+|Creature is undead!
+    --=isUndeadOrConstruct|1
+    --=DamageDice|0
+    --=BonusDamage|0
+    --+New Damage|[$DamageDice]
+  --<|
+
+  --:NegateDamageConstruct|
+    --+|Creature is construct!
+    --=isUndeadOrConstruct|1
+    --=DamageDice|0
+    --=BonusDamage|0
+    --+New Damage|[$DamageDice]
+  --<|
+  
+  --:RollDamage|
+    --=Damage|[$DamageDice] + [$BonusDamage]
+    --=DoubleDamage|[$Damage] * 2
+    --=HalfDamage|[$Damage] \ 2
+    --=QuarterDamage|[$Damage] \ 4
+  --<|
+
+  --:OutputText|
+    --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+    --+Damage Roll|[$DamageDice]
+    --?[$BonusDamage] -ne 0|>OutputBonusDamage
+  --<|
+
+  --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+  
+  --:CaseSaveFails|
+      --*|Save Fails!
+      --+|Save Failed!
+      --?[$isUndeadOrConstruct] -eq 0|>ApplyStatusMarker
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CaseSaveSucceeds|
+      --*|Save Suceeds!
+      --+|[#ff0000]Save Succeeded![/#]
+      -->CalculateDamage|[$Damage];Normal
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+
+  --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+  --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+  
+  --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<| 
+
+  --:ApplyStatusMarker|
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    --*|Creature's is bleeding!
+  --<|
+
+  
+}}

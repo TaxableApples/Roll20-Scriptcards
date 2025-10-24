@@ -1,0 +1,79 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|Booming Blade
+  --=Level|@{selected|level}
+  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}-1
+  --*NumDice|[$NumDice]
+  --=DamageDice|[$NumDice]d8
+  --*DamageDice|[$DamageDice]
+  --=CritDice|[$DamageDice.RollText]
+  --=BonusDamage|?{Damage Type|Attack,0|Movement,1d8}
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
+  --&DamageType|thunder
+  --&DamageFX|burn-frost
+  --&Description|You brandish the weapon used in the spell’s casting and make a melee attack with it against one creature within 5 feet of you. On a hit, the target suffers the weapon attack’s normal effects and then becomes sheathed in booming energy until the start of your next turn. If the target willingly moves 5 feet or more before then, the target takes 1d8 thunder damage, and the spell ends. At Higher Levels. At 5th level, the melee attack deals an extra 1d8 thunder damage to the target on a hit, and the damage the target takes for moving increases to 2d8. Both damage rolls increase by 1d8 at 11th level (2d8 and 3d8) and again at 17th level (3d8 and 4d8).
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->PlayEffects|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    --+Hit| for [$Damage] [&DamageType] damage!
+    -->CheckResistances|
+  --<|
+  
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]+[$BonusDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}

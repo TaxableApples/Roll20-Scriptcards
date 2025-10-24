@@ -14,14 +14,22 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 -Install the Following APIs into your game in the API MOD Menu: 
     --Scriptcards 
     --TokenMod 
-    --Supernotes
+    --Supernotes ( Not required if you remove the line "--#overridetemplate|wizard". See Supernotes docs to change the card-style: https://app.roll20.net/forum/post/11950821/supernotes-0-dot-2-4-now-with-even-more-templates/?pagenum=1).
+
+-Once you have placed some tokens on the battlefield, find the macro called 'Setup_All_NPCs.roll' under the 'Utilities' directory.
+    --Select all tokens and run this macro.
 
 **Optional Custom Setup:**
+
 For each of your characters, navigate to the Attributes & Abilities tab on their character sheet.
 -Under 'cust_spellcasting_ability', type their plain text spellcasting ability, for example "Wisdom". This is optional, but will allow the players to see their spellcasting ability is correct when inspecting attack rolls.
 
 Placing some custom status icons on a token will flag that creature to automatically roll with advantage or disadvantage on saving throws, but you will need to create these status icons.
 From the game Launch Screen on the right side you will find a section called 'Token Marker Sets' Create two tokens named: 'Advantage', 'Disadv'. The icon itself can be anything you want. I found dice icons with up and down arrows online that work great. 
+
+-I recommended installing these additional APIs in the API MOD Menu:
+    --Aura/Tint HealthColors (Provides a visual status for monster and player health, only if you want your players to see everyones health status.)
+    --Token Action Maker (Auto creat monster action buttons. I only use scriptcard attacks for player attacks, since my players can do their own math when monsters attack them, without slowing my ability to run the game.)
 
 **Usage**
 -Macros can be pasted into the chat, and if you have the required APIs installed in Roll20, the script will execute.
