@@ -1,0 +1,56 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|Prayer of Healing
+  --=HealingDice|?{Spell Level|2,2d8|3,3d8|4,4d8|5,5d8|6,6d8|7,7d8|8,8d8|9,9d8}
+  --&SpellBonus|@{selected|spellcasting_ability}
+  --&Description|Up to six creatures of your choice that you can see within range each regain hit points equal to 2d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs. At Higher LevelsWhen you cast this spell using a spell slot of 3rd level or higher, the Healing increases by 1d8 for each slot level above 2nd.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Healing|0
+  --=TotalHealing|0
+
+  --/|*******************Main************************
+  -->CalculateHealing|
+  -->CheckUndead|
+  -->CheckConstruct|
+  -->ApplyHealing|@{target|token_id};1;[$TotalHealing]
+  --+Healing|[&SpellBonus][$HealingDice]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+
+  --/|****************Subroutines********************
+
+  --:CalculateHealing|
+    --=Healing|[$HealingDice]+[&SpellBonus]
+    --=TotalHealing|[$Healing]
+  --<|
+
+  --:CheckUndead|
+    --?"@{target|npc_type}" -inc "undead" |NegateHealing
+
+    --/|My player named Artemis is undead, remove as needed:
+    --?@{target|character_name} -eq "Artemis" |NegateHealing
+  --<|
+
+  --:CheckConstruct|
+    --?"@{target|npc_type}" -inc "construct" |NegateHealing
+  --<|
+
+  --:NegateHealing|
+    --*|Creature is undead or construct!
+    --=Healing|0
+    --=TotalHealing|0
+  --<|
+ 
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyHealing|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|+[%3%]!
+  --<|
+}}

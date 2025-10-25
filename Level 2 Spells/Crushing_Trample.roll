@@ -1,0 +1,126 @@
+!scriptcard {{
+    --/|**********Variables***************
+    --#overridetemplate|wizard
+    --#title|Crushing Trample
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|@{selected|strength_mod}
+    --&BonusDamageType|Strength
+    --=DamageDice|4d6
+    --&DamageType|bludgeoning
+    --&DamageFX|beam-smoke
+    --&Description|Upon casting this spell, you are filled with a desire to overrun your foes. You immediately move up to twice your speed in a straight line, trampling every foe in your path that is of your size category or smaller. If you try to move through the space of an enemy whose size is larger than yours, your movement (and the spell) ends. Each enemy whose space you move through must make a successful Strength saving throw or be knocked prone and take 4d6 bludgeoning damage. If you have hooves, add your Strength modifier (minimum of +1) to the damage. You move through the spaces of foes whether or not they succeed on their Strength saving throws. You do not provoke opportunity attacks while moving under the effect of crushing trample.
+    --#sourceToken|@{selected|token_id}
+    --#emoteText|@{selected|token_name}
+    --~|array;pagetokens;AllTokens;@{selected|token_id}
+    --~TargetAngle|math;angle;@{selected|token_id};@{target|token_id}
+    --~SpellDistance|distance;@{selected|token_id};@{target|token_id}
+    --~TargetAngleRounded|math;round;[&TargetAngle]
+
+    --*DISTANCE|[$SpellDistance]
+    --*ANGLE|[$TargetAngleRounded]
+
+    --/|*******************Main************************
+    -->RollDamage|
+    -->OutputText|
+    -->GetSpellDistance|
+    --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq @{selected|token_id}|%
+        --&CharName|[*[&CurrentToken]:character_name]
+        --?[&CharName(length)] -le 0|%
+        -->GetTargetDistance|[&CurrentToken]
+        --?[$TargetDistance] -gt [$SpellDistance]|%
+        -->GetCreatureAngle|[&CurrentToken]
+        --?[$TargetAngleRounded] -eq [$CreatureAngleRounded]|<|%
+        --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
+            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
+        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
+        --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+        --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
+        -->ReportDamage|
+        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
+        --*|[hr]
+    --%|
+    -->PlayEffects|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputDescription[/rbutton]
+    --X|
+
+    --/|****************Subroutines********************
+    --:RollDamage|
+        --=Damage|[$DamageDice] + [$BonusDamage]
+        --=DoubleDamage|[$Damage] * 2
+        --=HalfDamage|[$Damage] \ 2
+        --=QuarterDamage|[$Damage] \ 4
+    --<|
+
+    --:OutputText|
+        --+|DC [$SpellSaveDC.Text] [&SpellSaveType] Saving Throw
+        --+Damage Roll|[$DamageDice]
+        --?[$BonusDamage] -ne 0|>OutputBonusDamage
+    --<|
+
+    --:OutputBonusDamage|
+        --=AdditionalDamage|[$BonusDamage] + [&BonusDamageType]
+        --+Bonus Damage|[$AdditionalDamage]
+    --<|
+
+    --:GetTargetDistance|
+        --~TargetDistance|distance;@{selected|token_id};[%1%]
+    --<|
+
+    --:GetCreatureAngle|
+        --~CreatureAngle|math;angle;@{selected|token_id};[%1%]
+        --~CreatureAngleRounded|math;round;[&CreatureAngle]
+    --<|
+
+    --:MakeSavingThrow|
+        --=TargetSave|[%2%] + [*[%1%]:dexterity_save_bonus]
+        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
+        --*Roll|[%3%]
+    --<|
+
+    --:SetSaveBool|
+        --&SaveBool|[%1%]
+    --<|
+
+    --:CaseSaveFails|
+        --*|Save Fails!
+        --+|Save Failed!
+        -->CalculateDamage|[$Damage];Normal
+        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+    --<|
+
+    --:CaseSaveSucceeds|
+        --*|Save Suceeds!
+        --+|[#ff0000]Save Succeeded![/#]
+        -->CalculateDamage|0;Normal
+    --<|
+    
+    --:CalculateDamage|
+        --=TotalDamage|[%1%]
+        --&CreatureResist|[%2%]
+    --<|
+    
+    --:ReportDamage|
+        --*Resistance|[&CreatureResist]
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
+    --<|
+
+    --:ApplyDamage|
+        --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+    --<|
+
+    --:PlayEffects|
+        --@token-mod|_ids @{selected|token_id} _move =[$TargetAngleRounded]|[$SpellDistance]g
+        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+    --<| 
+
+    --:OutputDescription|
+        --+|[f11][&Description][/f]
+    --<|  
+}}

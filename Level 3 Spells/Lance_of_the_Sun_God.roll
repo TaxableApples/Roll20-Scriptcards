@@ -2,30 +2,25 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Hooves
+  --#title|Lance of the Sun God
   --=AttackModifier|@{selected|strength_mod}
   --=DamageModifier|@{selected|strength_mod}
   --&AttackModifierType|Strength
   --=MagicWeaponBonus|0
-  --=DamageDice|?{dice|1d6,1d6|1d8(large-creature),1d8}
+  --=DamageDice|1d12
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|bludgeoning
+  --=ChargeAttack|?{Charge Attack|Yes,1|No,0}
+  --&DamageType|force
   --=DuelBonus|0
-  --=ArcheryBonus|0
-  --=OtherAttackBonus|0
-  --&OtherAttackBonusName|None
-  --&FeatDamageType|None
-  --=FeatDamage|0
-  --=CritFeatDamage|0
+  --&FeatDamageType|radiant
+  --=FeatDamage|2d8
+  --=CritFeatDamage|2d8
   --&FeatAName|None
   --=UseFeatA|0
-  --=FeatADamageValue|0
+  --=FeatADamageValue|2d6
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-  --=UseGreatWeaponFighting|0
-  --=UseSavageAttack|0
-  --=SavageAttackDmg|0
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -36,6 +31,7 @@
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=FinalDamage|0
   --=GlobalAttackMod|0
   --=GlobalDamageMod|0
   --=CritGlobalDamageMod|0
@@ -43,20 +39,19 @@
   --=CritFeatBDamage|0
   --=FeatADamage|0
   --=CritFeatADamage|0
+  --&DamageFX|beam-holy
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
-  --=ApplySavageAttack|0
-  --=GreatWeaponExtraDice|[$DamageDice.RollText]
-  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
 
   --/|*******************Main************************
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->PlayEffects|
   --X|
   
   --/|****************Subroutines********************
@@ -64,9 +59,8 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --?[$OtherAttackBonus] -gt 0|>ShowOtherAttackBonus
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$ArcheryBonus] + [$OtherAttackBonus] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$ArcheryBonus] [ARCH] + [$MagicWeaponBonus] [MAGIC]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
@@ -98,10 +92,6 @@
   --:CheckForGlobalAttackMods|
     --Rfirst|@{selected|character_id};repeating_tohitmod
     -->CheckNextAttackMod|
-  --<|
-
-  --:ShowOtherAttackBonus|
-    --+[&OtherAttackBonusName]|[$OtherAttackBonus]
   --<|
 
   --:CheckNextAttackMod|
@@ -161,11 +151,6 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
-  --:SavageAttackMsg|
-    --+Savage Attack|[$SavageAttackDmg]
-    --=ApplySavageAttack|[$SavageAttackDmg]
-  --<|
-
   --:CritFeatBMsg|
     --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
@@ -178,61 +163,52 @@
     --+[&FeatBName]|[$FeatBDamage]
   --<|
 
-  --:ApplyGreatWeaponFighting|
-    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
-  --<|
-
-  --:ApplyGreatWeaponFightingCrit|
-    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
-    --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
-  --<|
-
-  --:ShowGreatWeaponFighting|
-    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
-    --=DamageDice|[$GreatWeaponExtraDice]
-  --<|
-
-  --:ShowGreatWeaponFightingCrit|
-    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
-    --=CritDice|[$GreatWeaponExtraDiceCrit]
-  --<|
-
   --:Crit|
     --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
-    --+Damage Roll|[$DamageRollText]
+    --+Force Damage Roll|[$DamageDice] + [$CritDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --?[$UseSavageAttack] -gt 0|>SavageAttackMsg
-    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
-    --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
+    --=FinalDamage|[$Damage]
+    --?[$ChargeAttack] -gt 0|>DoubleDamage|>SingleDamage
+    --+|[f18][#ff0000]Critical Hit[/#] for [$FinalDamage] [&DamageType] and [&FeatDamageType] damage![/f]
     -->CheckResistances|
   --<|
   
   --:Hit|
-    --+Damage Roll|[$DamageDice]
+    --+Force Damage Roll|[$DamageDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
-    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
+    --?[$ChargeAttack] -gt 0|>DoubleDamage|>SingleDamage
+    --+|[f18]Attack Hit for [$FinalDamage] [&DamageType] and [&FeatDamageType] Damage![/f]
     -->CheckResistances|
   --<|
 
+  --:SingleDamage|
+    --=FinalDamage|[$Damage]
+  --<|
+
+  --:DoubleDamage|
+    --+|[br]
+    --+|[#ff0000]Double Damage![/#]
+    --=FinalDamage|[$Damage]*2
+  --<|
+
   --:ShowFeatDamage|
-    --+[&FeatDamageType]|[$FeatDamage]
+    --+Radiant Damage Roll|[$FeatDamage]
   --<|
 
   --:ShowCritFeatDamage|
-    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+    --+Radiant Damage Roll|[$FeatDamage] + [$CritFeatDamage]
   --<|
 
   --:ShowMagicBonus|
@@ -270,8 +246,12 @@
   --<|
   
   --:CalculateDamage|
-    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --=TotalDamage|[$FinalDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
+
+  --:PlayEffects|
+    --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
+  --<| 
 
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
