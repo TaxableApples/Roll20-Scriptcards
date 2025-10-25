@@ -1,0 +1,73 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|Shocking Shroud
+  --=DamageDice|2d8
+  --=FeatDamage|0
+  --&FeatDamageType|[FEAT]
+  --&DamageType|lightning
+  --&DamageFX|burn-frost
+  --&Description|Arcs of electricity dance over your body for the duration, granting you resistance to lightning damage. You can end the spell early by using an action to dismiss it. In addition, whenever a creature within 5 feet of you hits you with a melee attack, arcs of electricity strike your attacker, who takes 2d8 lightning damage.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->PlayEffects|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    --+Hit| for [$Damage] [&DamageType] damage!
+    -->CheckResistances|
+  --<|
+  
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}
