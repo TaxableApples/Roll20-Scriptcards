@@ -29,6 +29,7 @@
   --=Immunity|0
   --=Vulnerability|0
   --=TotalDamage|0
+  --=FinalDamage|0
   --=GlobalAttackMod|0
   --=GlobalDamageMod|0
   --=CritGlobalDamageMod|0
@@ -180,9 +181,10 @@
     -->CheckFeatA|
     -->CheckFeatB|
     --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus] 
+    --=FinalDamage|[$Damage]
     --?[$MagicBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
-    --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
+    --+|[f18]Attack Hit for [$FinalDamage] [&DamageType] Damage![/f]
     -->CheckResistances|
   --<|
 
@@ -203,8 +205,13 @@
   --<|
 
   --:Miss|
-    --=Damage|0
+    --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
+    --=FinalDamage|[$Damage]\2
     --+|[f18]Attack [#ff0000]missed[/#]![/f]
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Monster took [$FinalDamage] Splash Damage![/f]
+    -->CheckResistances|
   --<|
 
   --:CheckResistances|
@@ -214,17 +221,17 @@
   --<|
     
   --:ApplyResistance|
-    --=Resistance|[$Damage] \ 2
+    --=Resistance|[$FinalDamage] \ 2
     --*|Creature is resistant to [&DamageType] damage!
   --<|
   
   --:ApplyImmunity|
-    --=Immunity|[$Damage]
+    --=Immunity|[$FinalDamage]
     --*|Creature is immune to [&DamageType] damage!
   --<|
   
   --:ApplyVulnerability|
-    --=Vulnerability|[$Damage]
+    --=Vulnerability|[$FinalDamage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
   
@@ -233,7 +240,7 @@
   --<|
   
   --:CalculateDamage|
-    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --=TotalDamage|[$FinalDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
 
   --:OutputTxt|
@@ -243,7 +250,6 @@
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
     --=CalcPostDamage|[$DamageDice.RollCount]-2
-    --*Post Damage Dice|[$CalcPostDamage]
     --=PostDamage|[$CalcPostDamage]d4
     --*At End of @{target|token_name}'s Next Turn, Apply Another|[$PostDamage] Damage
   --<|
