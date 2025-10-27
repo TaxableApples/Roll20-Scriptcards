@@ -29,6 +29,7 @@
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
+  --&Character|@{selected|character_name}
   --=TargetAC|@{target|npc_ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
@@ -57,6 +58,7 @@
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->ShowMacroButtons|
   --X|
   
   --/|****************Subroutines********************
@@ -277,4 +279,9 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
+  --:ShowMacroButtons|
+    --&AbilityName|Divine-Strike
+    --+|[br]
+    --+|[button]Divine Strike::~[&Character]|[&AbilityName][/button]
+  --<|
 }}

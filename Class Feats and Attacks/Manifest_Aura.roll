@@ -2,18 +2,13 @@
 
   --/|****************Variables*******************
   --#overridetemplate|wizard
-  --#title|Booming Blade
+  --#title|Manifest Aura
   --=Level|@{selected|level}
-  --=DamageSelect|?{Damage Type|Attack,0|Movement,1}
-  --=NumDiceA|[$Level] + 1 / 6 + 0.5 {ROUND}-1
-  --=NumDiceB|[$Level] + 1 / 6 + 0.5 {ROUND}
-  --=DamageDiceA|[$NumDiceA]d8
-  --=DamageDiceB|[$NumDiceB]d8
-  --=DamageDice|[?[$DamageSelect] -eq 0|[$DamageDiceA]|[$DamageDiceB]]
+  --=DamageDice|[?[$Level] -gt 6|1d6|2d6]
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|thunder
   --&DamageFX|burn-frost
-  --&Description|You brandish the weapon used in the spell’s casting and make a melee attack with it against one creature within 5 feet of you. On a hit, the target suffers the weapon attack’s normal effects and then becomes sheathed in booming energy until the start of your next turn. If the target willingly moves 5 feet or more before then, the target takes 1d8 thunder damage, and the spell ends. At Higher Levels. At 5th level, the melee attack deals an extra 1d8 thunder damage to the target on a hit, and the damage the target takes for moving increases to 2d8. Both damage rolls increase by 1d8 at 11th level (2d8 and 3d8) and again at 17th level (3d8 and 4d8).
+  --&Description|Starting when you choose this origin at 1st level, you are able to channel your elemental power into a swirling aura. As a bonus action, you can surround yourself in a magical aura of elemental material or energy appropriate to your heritage element for 1 minute. While the aura persists, you gain the following benefits: When you are attacked, you can use your reaction to impose disadvantage on the attack roll. When you cast a spell of 1st level or higher, the aura around you intensifies until the start of your next turn. During this time, any creature that ends its turn within 5 feet of you or that enters that area takes 1d6 damage of the type associated with your heritage element. This damage increases to 2d6 when you reach 7th level. You can use this feature twice. You regain all expended uses when you finish a long rest.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}

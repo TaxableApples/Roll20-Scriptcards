@@ -1,32 +1,35 @@
-!scriptcard  {{
-  --/|**********Variables***************
+!scriptcard Attack {{
+
+  --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Shocking Grasp
-  --&AttackModifierType|@{selected|cust_spellcasting_ability}
-  --=AttackModifier|@{selected|spellcasting_ability}
-  --=MagicWeaponBonus|0
-  --=Level|@{selected|level}
-  --=NumDice|[$Level] + 1 / 6 + 0.5 {ROUND}
-  --=DamageDice|[$NumDice]d10
+  --#title|Hazirawn
+  --=AttackModifier|@{selected|strength_mod}
+  --=DamageModifier|@{selected|strength_mod}
+  --&AttackModifierType|Strength
+  --=MagicWeaponBonus|2
+  --=DamageDice|1d12
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|lightning
+  --&DamageType|necrotic
+  --=DuelBonus|0
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
-  --=ProficiencyBonus|@{selected|pb}
   --&FeatAName|None
   --=UseFeatA|0
   --=FeatADamageValue|0
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
-  --&DamageFX|bubbling-frost
-  --&MarkerA|stopwatch
-  --&Description|Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have advantage on the attack roll if the target is wearing armor made of metal. On a hit, the target takes 1d8 lightning damage, and it cant take reactions until the start of its next turn. The spells damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).
+  --=UseGreatWeaponFighting|1
+  --=UseSavageAttack|1
+  --=SavageAttackDmg|[$DamageDice.RollText]
+
+
+  --/|****************DO NOT CHANGE******************
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
-  --=TargetAC|@{target|ac}
+  --=TargetAC|@{target|npc_ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
   --=Resistance|0
@@ -46,14 +49,14 @@
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
-  
+  --=ApplySavageAttack|0
+  --=GreatWeaponExtraDice|[$DamageDice.RollText]
+  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
+
   --/|*******************Main************************
   -->MakeAttack|
-  -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  --+|[br]
-  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -61,8 +64,8 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
     --+Attack Bonus| [$AttackBonus]
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
@@ -153,6 +156,15 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  -<|
+
+  --:SavageAttackMsg|
+    --+Savage Attack|[$SavageAttackDmg]
+    --=ApplySavageAttack|[$SavageAttackDmg]
+  --<|
+
   --:CritFeatBMsg|
     --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
@@ -165,14 +177,36 @@
     --+[&FeatBName]|[$FeatBDamage]
   --<|
 
+  --:ApplyGreatWeaponFighting|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+  --<|
+
+  --:ApplyGreatWeaponFightingCrit|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
+  --<|
+
+  --:ShowGreatWeaponFighting|
+    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
+    --=DamageDice|[$GreatWeaponExtraDice]
+  --<|
+
+  --:ShowGreatWeaponFightingCrit|
+    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
+    --=CritDice|[$GreatWeaponExtraDiceCrit]
+  --<|
+
   --:Crit|
     --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
     --+Damage Roll|[$DamageRollText]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$CritDice] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus] 
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus
+    -->CheckSavageAttack|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$MagicWeaponBonus]
+    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
@@ -183,12 +217,13 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus] 
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
+    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
+    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
-    -->ApplyStatusMarker|
   --<|
 
   --:ShowFeatDamage|
@@ -232,24 +267,13 @@
     --=Vulnerability|[$Damage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
-
-  --:ApplyStatusMarker|
-    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
-  --<|
-  
-  --:PlayEffects|
-    --vtoken|@{target|token_id} [&DamageFX]
-  --<|
   
   --:CalculateDamage|
     --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
   --<|
-  
-  --:OutputTxt|
-    --+|[f11][&Description][/f]
-  --<|
-  
+
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
+
 }}

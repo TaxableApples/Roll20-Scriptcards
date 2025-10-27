@@ -12,6 +12,8 @@
   --=DamageDice|?{Spell Level?|2,2d8|3,3d8|4,4d8|5,5d8|6,6d8|7,7d8|8,8d8|9,9d8}
   --&DamageType|fire
   --&DamageFX|burn-fire
+  --&MarkerA|Disadv
+  --&MarkerB|Disadv-Attack
   --&Description|Choose a manufactured metal object, such as a metal weapon or a suit of heavy or medium metal armor, that you can see within range. You cause the object to glow red-hot. Any creature in physical contact with the object takes 2d8 fire damage when you cast the spell. Until the spell ends, you can use a bonus action on each of your subsequent turns to cause this damage again. If a creature is holding or wearing the object and takes the damage from it, the creature must succeed on a Constitution saving throw or drop the object if it can. If it doesn’t drop the object, it has disadvantage on attack rolls and ability checks until the start of your next turn. At Higher LevelsWhen you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot above 2nd.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
@@ -70,6 +72,7 @@
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
       --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+      -->ApplyStatusMarker|
   --<|
 
   --:CaseSaveSucceeds|
@@ -79,6 +82,13 @@
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
       --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
+  --<|
+
+  --:ApplyStatusMarker|
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerA]
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&MarkerB]
+    --*|Target drops metal objects
+    --*|Target is disadvantaged *if it cant drop metal objects, until next player turn.
   --<|
 
   --:CalculateDamage|
@@ -98,7 +108,7 @@
   --:PlayEffects|
     --vtoken|@{target|token_id} [&DamageFX]
   --<|
-  
+
   --:OutputDescription|
         --+|[f11][&Description][/f]
     --<| 
