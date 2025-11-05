@@ -2,12 +2,12 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Hand Axe
+  --#title|Light Crossbow
   --=AttackModifier|@{selected|dexterity_mod}
   --=DamageModifier|@{selected|dexterity_mod}
   --&AttackModifierType|Dexterity
   --=MagicWeaponBonus|0
-  --=DamageDice|1d6
+  --=DamageDice|1d8
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|slashing
   --=DuelBonus|0
@@ -41,7 +41,7 @@
   --=CritFeatADamage|0
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
-  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1|Coup Des Gras,3m20kh1}
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
@@ -50,7 +50,6 @@
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->ShowMacroButtons|
   --X|
   
   --/|****************Subroutines********************
@@ -242,12 +241,5 @@
 
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
-  --<|
-
-  --:ShowMacroButtons|
-    --&AbilityName|Booming-Blade
-    --+|[br]
-    --+[u]Additional Damage Options[/u]|
-    --+|[button]Booming Blade::~[&Character]|[&AbilityName][/button]
   --<|
 }}

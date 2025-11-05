@@ -282,6 +282,7 @@
   --:ShowMacroButtons|
     --&AbilityName|Divine-Strike
     --+|[br]
+    --+[u]Additional Damage Options[/u]|
     --+|[button]Divine Strike::~[&Character]|[&AbilityName][/button]
   --<|
 }}

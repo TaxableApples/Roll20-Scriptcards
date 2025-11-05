@@ -46,19 +46,19 @@
   --<|
 
   --:NegateDamageUndead|
-    --+|Creature is undead!
+    --*|Creature is undead!
     --=isUndeadOrConstruct|1
     --=DamageDice|0
     --=BonusDamage|0
-    --+New Damage|[$DamageDice]
+    --*New Damage|[$DamageDice]
   --<|
 
   --:NegateDamageConstruct|
-    --+|Creature is construct!
+    --*|Creature is construct!
     --=isUndeadOrConstruct|1
     --=DamageDice|0
     --=BonusDamage|0
-    --+New Damage|[$DamageDice]
+    --*New Damage|[$DamageDice]
   --<|
   
   --:RollDamage|

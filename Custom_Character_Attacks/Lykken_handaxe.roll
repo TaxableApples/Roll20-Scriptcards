@@ -41,7 +41,7 @@
   --=CritFeatADamage|0
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
-  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1|Coup Des Gras,3m20kh1}
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
@@ -249,5 +249,6 @@
     --+|[br]
     --+[u]Additional Damage Options[/u]|
     --+|[button]Booming Blade::~[&Character]|[&AbilityName][/button]
+    
   --<|
 }}

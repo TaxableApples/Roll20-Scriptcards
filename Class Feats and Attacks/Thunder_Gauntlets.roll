@@ -2,14 +2,14 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Hand Axe
-  --=AttackModifier|@{selected|dexterity_mod}
-  --=DamageModifier|@{selected|dexterity_mod}
-  --&AttackModifierType|Dexterity
-  --=MagicWeaponBonus|0
-  --=DamageDice|1d6
+  --#title|Thunder Gauntlets
+  --=AttackModifier|@{selected|intelligence_mod}
+  --=DamageModifier|@{selected|intelligence_mod}
+  --&AttackModifierType|Intelligence
+  --=MagicWeaponBonus|1
+  --=DamageDice|1d8
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|slashing
+  --&DamageType|thunder
   --=DuelBonus|0
   --&FeatDamageType|None
   --=FeatDamage|0
@@ -21,6 +21,9 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
+  --=UseGreatWeaponFighting|0
+  --=UseSavageAttack|0
+  --=SavageAttackDmg|[$DamageDice.RollText]
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -45,6 +48,11 @@
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
+  --=ApplySavageAttack|0
+  --=GreatWeaponExtraDice|[$DamageDice.RollText]
+  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
+  --&Marker|Disadv-Attack
+  --&Description|Each of the armor's gauntlets counts as a simple melee weapon while you aren't holding anything in it, and it deals 1d8 thunder damage on a hit. A creature hit by the gauntlet has disadvantage on attack rolls against targets other than you until the start of your next turn, as the armor magically emits a distracting pulse when the creature attacks someone else.
 
   --/|*******************Main************************
   -->MakeAttack|
@@ -150,6 +158,15 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  -<|
+
+  --:SavageAttackMsg|
+    --+Savage Attack|[$SavageAttackDmg]
+    --=ApplySavageAttack|[$SavageAttackDmg]
+  --<|
+
   --:CritFeatBMsg|
     --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
@@ -162,19 +179,41 @@
     --+[&FeatBName]|[$FeatBDamage]
   --<|
 
+  --:ApplyGreatWeaponFighting|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+  --<|
+
+  --:ApplyGreatWeaponFightingCrit|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
+  --<|
+
+  --:ShowGreatWeaponFighting|
+    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
+    --=DamageDice|[$GreatWeaponExtraDice]
+  --<|
+
+  --:ShowGreatWeaponFightingCrit|
+    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
+    --=CritDice|[$GreatWeaponExtraDiceCrit]
+  --<|
+
   --:Crit|
     --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
     --+Damage Roll|[$DamageRollText]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
+    -->CheckSavageAttack|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
     --?[$Rage] -ne 0|>ShowRage
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
+    -->ApplyStatusMarker|
   --<|
   
   --:Hit|
@@ -182,12 +221,14 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
+    -->ApplyStatusMarker|
   --<|
 
   --:ShowFeatDamage|
@@ -244,10 +285,21 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
+  --:ApplyStatusMarker|
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&Marker]
+  --<|
+
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
   --:ShowMacroButtons|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputTxt[/rbutton]
     --&AbilityName|Booming-Blade
     --+|[br]
     --+[u]Additional Damage Options[/u]|
     --+|[button]Booming Blade::~[&Character]|[&AbilityName][/button]
+    
   --<|
 }}
