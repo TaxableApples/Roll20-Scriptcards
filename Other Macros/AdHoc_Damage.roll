@@ -1,0 +1,66 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|@{target|token_name}
+  --=DamageDicePrefix|?{Damage Dice Prefix? |1,1|2,2|3,3|4,4|5,5|6,6|7,7|8,8|9,9|10,10|11,11|12,12|13,13|14,14|15,15|16,16|17,17|18,18|19,19|20,20}
+  --=DamageDiceSuffix|?{Damage Dice Suffix? |4,4|6,6|8,8|10,10|12,12|20,20}
+  --=DamageDice|[$DamageDicePrefix]d[$DamageDiceSuffix]
+  --=FeatDamage|?{Any Additional Damage? |0,0|1,1|2,2|3,3|4,4|5,5|6,6|7,7|8,8|9,9|10,10|11,11|12,12|13,13|14,14|15,15|16,16|17,17|18,18|19,19|20,20}
+  --&FeatDamageType|other
+  --&DamageType|?{DamageType? |acid|bludgeoning|cold|fire|force|lightning|necrotic|piercing|poison|psychic|radiant|slashing|thunder|other}
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --X|
+
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    --+Hit| for [$Damage] [&DamageType] damage!
+    -->CheckResistances|
+  --<|
+  
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}

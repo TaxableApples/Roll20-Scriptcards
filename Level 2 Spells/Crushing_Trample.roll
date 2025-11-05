@@ -1,30 +1,37 @@
 !scriptcard {{
     --/|**********Variables***************
     --#overridetemplate|wizard
-    --#title|Poisoned Volley
-    --&SpellRadius|2
+    --#title|Crushing Trample
     --=SpellSaveDC|@{selected|spell_save_dc}
-    --&SpellSaveType|Constitution
-    --=BonusDamage|0
-    --&BonusDamageType|[FEAT]
-    --=DamageDice|?{Spell Level?|2,3d8|3,4d8|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
-    --&DamageType|poison
-    --&DamageFX|beam-acid
-    --&DamageFXB|nova-acid
-    --&Marker|Poisoned
-    --&Description|By drawing back and releasing an imaginary bowstring, you summon forth dozens of glowing green arrows. The arrows dissipate when they hit, but all creatures in a 20-foot square within range take 3d8 poison damage and become poisoned. A creature that makes a successful Constitution saving throw takes half as much damage and is not poisoned. At Higher LevelsWhen you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for each slot level above 2nd.
+    --&SpellSaveType|Dexterity
+    --=BonusDamage|@{selected|strength_mod}
+    --&BonusDamageType|Strength
+    --=DamageDice|4d6
+    --&DamageType|bludgeoning
+    --&DamageFX|beam-smoke
+    --&Description|Upon casting this spell, you are filled with a desire to overrun your foes. You immediately move up to twice your speed in a straight line, trampling every foe in your path that is of your size category or smaller. If you try to move through the space of an enemy whose size is larger than yours, your movement (and the spell) ends. Each enemy whose space you move through must make a successful Strength saving throw or be knocked prone and take 4d6 bludgeoning damage. If you have hooves, add your Strength modifier (minimum of +1) to the damage. You move through the spaces of foes whether or not they succeed on their Strength saving throws. You do not provoke opportunity attacks while moving under the effect of crushing trample.
     --#sourceToken|@{selected|token_id}
     --#emoteText|@{selected|token_name}
     --~|array;pagetokens;AllTokens;@{selected|token_id}
+    --~TargetAngle|math;angle;@{selected|token_id};@{target|token_id}
+    --~SpellDistance|distance;@{selected|token_id};@{target|token_id}
+    --~TargetAngleRounded|math;round;[&TargetAngle]
+
+    --*DISTANCE|[$SpellDistance]
+    --*ANGLE|[$TargetAngleRounded]
 
     --/|*******************Main************************
     -->RollDamage|
     -->OutputText|
+    -->GetSpellDistance|
     --%CurrentToken|foreach;AllTokens 
+        --?[&CurrentToken] -eq @{selected|token_id}|%
         --&CharName|[*[&CurrentToken]:character_name]
         --?[&CharName(length)] -le 0|%
         -->GetTargetDistance|[&CurrentToken]
-        --?[$TargetDistance] -gt [&SpellRadius]|%
+        --?[$TargetDistance] -gt [$SpellDistance]|%
+        -->GetCreatureAngle|[&CurrentToken]
+        --?[$TargetAngleRounded] -eq [$CreatureAngleRounded]|<|%
         --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
             -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
         --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
@@ -37,7 +44,6 @@
         --*|[hr]
     --%|
     -->PlayEffects|
-    -->PlayEffectsB|
     --+|[br]
     --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
@@ -62,7 +68,12 @@
     --<|
 
     --:GetTargetDistance|
-        --~TargetDistance|distance;@{target|token_id};[%1%]
+        --~TargetDistance|distance;@{selected|token_id};[%1%]
+    --<|
+
+    --:GetCreatureAngle|
+        --~CreatureAngle|math;angle;@{selected|token_id};[%1%]
+        --~CreatureAngleRounded|math;round;[&CreatureAngle]
     --<|
 
     --:MakeSavingThrow|
@@ -78,7 +89,6 @@
     --:CaseSaveFails|
         --*|Save Fails!
         --+|Save Failed!
-        -->ApplyCondition|[%1%]
         -->CalculateDamage|[$Damage];Normal
         --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
         --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
@@ -88,22 +98,14 @@
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
         --+|[#ff0000]Save Succeeded![/#]
-        -->CalculateDamage|[$HalfDamage];Normal
-        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
-        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
-        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+        -->CalculateDamage|0;Normal
     --<|
-
-    --:ApplyCondition|
-        --*[*[%1%]:character_name]|[&Marker]
-        --@token-mod|_ids [%1%] _ingore-selected _set statusmarkers|[&Marker]
-    --<|
-
+    
     --:CalculateDamage|
         --=TotalDamage|[%1%]
         --&CreatureResist|[%2%]
     --<|
-
+    
     --:ReportDamage|
         --*Resistance|[&CreatureResist]
         --*|Creature takes [$TotalDamage] [&DamageType] Damage
@@ -114,13 +116,10 @@
     --<|
 
     --:PlayEffects|
+        --@token-mod|_ids @{selected|token_id} _move =[$TargetAngleRounded]|[$SpellDistance]g
         --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-    --<|    
+    --<| 
 
-    --:PlayEffectsB|
-        --vtoken|@{target|token_id} [&DamageFXB]
-    --<|  
-    
     --:OutputDescription|
         --+|[f11][&Description][/f]
     --<|  

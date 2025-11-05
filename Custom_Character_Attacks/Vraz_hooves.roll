@@ -7,7 +7,7 @@
   --=DamageModifier|@{selected|strength_mod}
   --&AttackModifierType|Strength
   --=MagicWeaponBonus|0
-  --=DamageDice|1d6
+  --=DamageDice|?{dice|1d6,1d6|1d8(large-creature),1d8}
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|bludgeoning
   --=DuelBonus|0
@@ -46,7 +46,7 @@
   --=CritFeatADamage|0
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
-  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1}
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1|Coup Des Gras,3m20kh1}
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]

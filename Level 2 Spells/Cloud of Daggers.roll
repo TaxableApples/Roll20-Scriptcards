@@ -29,7 +29,6 @@
         --*|[hr]
     --%|
     -->PlayEffects|
-    -->PlayEffectsB|
     --+|[br]
     --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
@@ -80,7 +79,7 @@
         --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
     --<|
 
-    --:PlayEffectsB|
+    --:PlayEffects|
         --vtoken|@{target|token_id} [&DamageFXB]
     --<|  
     
