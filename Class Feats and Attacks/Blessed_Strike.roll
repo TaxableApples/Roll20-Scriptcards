@@ -2,7 +2,7 @@
 
   --/|****************Variables*******************
   --#overridetemplate|wizard
-  --#title|Divine Strike
+  --#title|Blessed Strike
   --=Level|@{selected|level}
   --=DamageDice|1d8
   --=CritDice|[$DamageDice.RollText]
