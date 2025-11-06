@@ -31,7 +31,7 @@
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
   --&Character|@{selected|character_name}
-  --=TargetAC|@{target|npc_ac}
+  --=TargetAC|@{target|ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
   --=Resistance|0

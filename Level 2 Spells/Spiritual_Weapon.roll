@@ -1,4 +1,5 @@
 !scriptcard  {{
+  --*| This attack should be applied to an NPC Spiritual Weapon token.
   --/| Note: This macro just covers the weapon attack and damage.
 
   --/|**********Variables***************
@@ -10,22 +11,31 @@
   --=DamageDice|?{Spell Level?|2,1d8|3,2d8|4,3d8|5,4d8|6,5d8|7,6d8|8,7d8|9,8d8}
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|force
+  --=DuelBonus|0
+  --=ArcheryBonus|0
+  --=OtherAttackBonus|0
+  --&OtherAttackBonusName|None
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
+  --=RageDamage|0
   --&FeatAName|None
   --=UseFeatA|0
   --=FeatADamageValue|0
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
+  --=UseGreatWeaponFighting|0
+  --=UseSavageAttack|0
+  --=SavageAttackDmg|0
   --&DamageFX|burn-smoke
   --&Description|You create a floating, spectral weapon within range that lasts for the duration or until you cast this spell again. When you cast the spell, you can make a melee spell attack against a creature within 5 feet of the weapon. On a hit, the target takes force damage equal to 1d8 + your spellcasting ability modifier. As a bonus action on your turn, you can move the weapon up to 20 feet and repeat the attack against a creature within 5 feet of it. The weapon can take whatever form you choose. Clerics of deities who are associated with a particular weapon (as St. Cuthbert is known for his mace and Thor for his hammer) make this spell’s effect resemble that weapon. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for every two slot levels above 2nd.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
+  --&Character|@{selected|character_name}
   --=TargetAC|@{target|ac}
-  --=ProficiencyBonus|@{selected|pb}
+  --=ProficiencyBonus|@{selected|npc_pb}
   --=CritRoll|20
   --=Resistance|0
   --=Immunity|0
@@ -44,14 +54,16 @@
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
+  --=ApplySavageAttack|0
+  --=GreatWeaponExtraDice|[$DamageDice.RollText]
+  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
 
   --/|*******************Main************************
   -->MakeAttack|
   -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  --+|[br]
-  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  -->ShowMacroButtons|
   --X|
   
   --/|****************Subroutines********************
@@ -59,11 +71,14 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$ArcheryBonus] + [$OtherAttackBonus] + [$MagicWeaponBonus]
     --+Attack Bonus:| [$AttackModifier.Raw]
     --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
     --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
-    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus|
+    --?[$DuelBonus] -gt 0|>ShowDuelBonus
+    --?[$ArcheryBonus] -gt 0|>ShowArcheryBonus
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus
+    --?[$OtherAttackBonus] -gt 0|>ShowOtherAttackBonus
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -94,6 +109,18 @@
   --:ShowGlobalAttackMod|
     --+[*R:global_attack_name]|[$GlobalAttackMod]
   --<|
+
+  --:ShowDuelBonus|
+    --+Duel:|[$DuelBonus.RollText]
+  --<|
+
+  --:ShowArcheryBonus|
+    --+Archery:|[$ArcheryBonus.RollText]
+  --<|
+
+  --:ShowOtherAttackBonus|
+    --+[&OtherAttackBonusName]:|[$OtherAttackBonus]
+  --<|
   
   --:ShowMagicWeaponAttackBonus|
     --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
@@ -115,30 +142,6 @@
     --+[*R:global_attack_name]|[$GlobalAttackMod]
   --<|
 
-  --:CheckForGlobalDamageMods|
-    --Rfirst|@{selected|character_id};repeating_damagemod
-    -->CheckNextDamageMod|
-  --<|
-
-  --:CheckNextDamageMod|
-    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
-    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
-    --Rnext|
-    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
-  --<|
-
-  --:CritApplyGlobalDamageMod|
-    --=GlobalDamageMod|[*R:global_damage_damage]
-    --=CritGlobalDamageMod|[*R:global_damage_damage]
-    --=GlobalCritDamageTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
-    --+[*R:global_damage_name]|[$GlobalCritDamageTxt]
-  --<|
-
-  --:ApplyGlobalDamageMod|
-    --=GlobalDamageMod|[*R:global_damage_damage]
-    --+[*R:global_damage_name]|[$GlobalDamageMod]
-  --<|
-
   --:CheckFeatA|
     --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
@@ -158,6 +161,15 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  --<|
+
+  --:SavageAttackMsg|
+    --+Savage Attack|[$SavageAttackDmg]
+    --=ApplySavageAttack|[$SavageAttackDmg]
+  --<|
+
   --:CritFeatBMsg|
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
     --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
@@ -167,14 +179,34 @@
     --+[&FeatBName]|[$FeatBDamageValue]
   --<|
 
+  --:ApplyGreatWeaponFighting|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+  --<|
+
+  --:ApplyGreatWeaponFightingCrit|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
+  --<|
+
+  --:ShowGreatWeaponFighting|
+    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
+    --=DamageDice|[$GreatWeaponExtraDice]
+  --<|
+
+  --:ShowGreatWeaponFightingCrit|
+    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
+    --=CritDice|[$GreatWeaponExtraDiceCrit]
+  --<|
+
   --:Crit|
     --+Damage Roll|[$DamageDice] [$CritDice]
-    -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageBonus] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus] 
-    --+Ability Bonus|[$DamageBonus]
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus
+    -->CheckSavageAttack|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
+    --=Damage|[$DamageDice] + [$CritDice] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
+    --?[$RageDamage] -ne 0|>ShowRage
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
@@ -182,12 +214,11 @@
   
   --:Hit|
     --+Damage Roll|[$DamageDice]
-    -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$DamageBonus] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus] 
-    --+Ability Bonus|[$DamageBonus]
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
+    --=Damage|[$DamageDice] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
@@ -199,6 +230,10 @@
 
   --:ShowCritFeatDamage|
     --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowRage|
+    --+Rage|[$RageDamage.RollText]
   --<|
 
   --:ShowMagicBonus|
@@ -251,4 +286,8 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
+  --:ShowMacroButtons|
+    --+|[br]
+    --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --<|
 }}
