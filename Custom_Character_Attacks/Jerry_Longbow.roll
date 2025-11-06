@@ -305,8 +305,10 @@
 
   --:ShowMacroButtons|
     --&AbilityName|Slayers-Prey
+    --&AbilityNameC|Hail-of-Thorns
     --+|[br]
     --+[u]Additional Damage Options[/u]|
     --+|[button]Slayer's Prey::~[&Character]|[&AbilityName][/button]
+    --+|[button]Hail of Thorns::~[&Character]|[&AbilityNameC][/button]
   --<|
 }}

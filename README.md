@@ -9,11 +9,12 @@ Usage Documentation can be found [here](https://wiki.roll20.net/Script:ScriptCar
 
 **Requirements:**
 -You must have a Roll20 Pro Account.
--I recommend using D&D 2014 Character sheets.
+-This probably only works with D&D 2014 Character sheets.
 -As of writing this, scriptcards are not compatible with D&D 2024 or Jumpgate.
 -Install the Following APIs into your game in the API MOD Menu: 
     --Scriptcards 
     --TokenMod 
+    --ChatSetAttr
     --Supernotes, not required if you remove the line "--#overridetemplate|wizard". See Supernotes docs to change the card-style [here](https://app.roll20.net/forum/post/11950821/supernotes-0-dot-2-4-now-with-even-more-templates/?pagenum=1).
 
 -Once you have placed some tokens on the battlefield, find the macro called 'Setup_All_NPCs.roll' under the 'Utilities' directory.

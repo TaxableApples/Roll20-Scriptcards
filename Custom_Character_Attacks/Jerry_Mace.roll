@@ -306,9 +306,11 @@
   --:ShowMacroButtons|
     --&AbilityName|Bleed
     --&AbilityNameB|Slayers-Prey
+    --&AbilityNameC|Hail-of-Thorns
     --+|[br]
     --+[u]Additional Damage Options[/u]|
     --+|[button]Bleed::~[&Character]|[&AbilityName][/button]
     --+|[button]Slayer's Prey::~[&Character]|[&AbilityNameB][/button]
+    --+|[button]Hail of Thorns::~[&Character]|[&AbilityNameC][/button]
   --<|
 }}

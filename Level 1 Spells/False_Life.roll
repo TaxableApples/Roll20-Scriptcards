@@ -18,6 +18,7 @@
  
   --:CalculateHealing|
     --=Healing|[$HealingDice]+[$SpellBonus]
+    --@setattr| _charid [*S:character_id] _hp_temp|[$Healing]
   --<|
   
   --:OutputTxt|

@@ -1,7 +1,7 @@
 !scriptcard {{
     --/|**********Variables***************
     --#overridetemplate|wizard
-    --#title|Thunder Wave
+    --#title|Thunderwave
     --&SpellRadius|3
     --=SpellSaveDC|@{selected|spell_save_dc}
     --&SpellSaveType|Constitution

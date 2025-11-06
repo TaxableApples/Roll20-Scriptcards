@@ -56,6 +56,8 @@
   --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
 
   --/|*******************Main************************
+  -->CheckUndead|
+  -->CheckConstruct|
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
@@ -79,6 +81,18 @@
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
     --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:CheckUndead|
+    --?"@{target|npc_type}" -inc "undead" |DMReport
+  --<|
+
+  --:CheckConstruct|
+    --?"@{target|npc_type}" -inc "construct" |DMReport
+  --<|
+
+  --:DMReport|
+    --*|Creature is Undead or Construct!
   --<|
 
   --:CheckForAdvantage|

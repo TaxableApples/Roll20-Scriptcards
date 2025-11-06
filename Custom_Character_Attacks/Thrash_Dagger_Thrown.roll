@@ -1,15 +1,15 @@
-!scriptcard  {{
+!scriptcard Attack {{
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Light Crossbow
+  --#title|Dagger
   --=AttackModifier|@{selected|dexterity_mod}
   --=DamageModifier|@{selected|dexterity_mod}
   --&AttackModifierType|Dexterity
   --=MagicWeaponBonus|0
-  --=DamageDice|1d8
+  --=DamageDice|1d4
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|slashing
+  --&DamageType|piercing
   --=DuelBonus|0
   --=ArcheryBonus|0
   --=OtherAttackBonus|0
@@ -26,7 +26,7 @@
   --=FeatBDamageValue|0
   --=UseGreatWeaponFighting|0
   --=UseSavageAttack|0
-  --=SavageAttackDmg|0
+  --=SavageAttackDmg|[$DamageDice.RollText]
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
@@ -304,5 +304,8 @@
 
   --:ShowMacroButtons|
     --+|[br]
+    --&AbilityName|Battle-Maneuver
+    --+|[u]Additional Damage Options[/u]
+    --+|[button]Battle Maneuver::~[&Character]|[&AbilityName][/button]
   --<|
 }}

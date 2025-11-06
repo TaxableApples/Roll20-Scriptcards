@@ -1,5 +1,5 @@
 !scriptcard  {{
-  --/|Note: This is just the save & damage roll.
+  --*|Note: This is just the save & damage roll.
 
   --/|**********Variables***************
   --#overridetemplate|wizard
