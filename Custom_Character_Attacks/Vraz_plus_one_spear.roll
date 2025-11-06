@@ -17,6 +17,7 @@
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
+  --=RageDamage|0
   --&FeatAName|None
   --=UseFeatA|0
   --=FeatADamageValue|0
@@ -29,6 +30,7 @@
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
+  --&Character|@{selected|character_name}
   --=TargetAC|@{target|npc_ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
@@ -57,6 +59,7 @@
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->ShowMacroButtons|
   --X|
   
   --/|****************Subroutines********************
@@ -64,10 +67,14 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --?[$OtherAttackBonus] -gt 0|>ShowOtherAttackBonus
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$ArcheryBonus] + [$OtherAttackBonus] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$ArcheryBonus] [ARCH] + [$MagicWeaponBonus] [MAGIC]
-    --+Attack Bonus| [$AttackBonus]
+    --+Attack Bonus:| [$AttackModifier.RollText]
+    --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
+    --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
+    --?[$DuelBonus] -gt 0|>ShowDuelBonus
+    --?[$ArcheryBonus] -gt 0|>ShowArcheryBonus
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus
+    --?[$OtherAttackBonus] -gt 0|>ShowOtherAttackBonus
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -95,13 +102,29 @@
     --+| 
   --<|
 
-  --:CheckForGlobalAttackMods|
-    --Rfirst|@{selected|character_id};repeating_tohitmod
-    -->CheckNextAttackMod|
+  --:ShowGlobalAttackMod|
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:ShowDuelBonus|
+    --+Duel:|[$DuelBonus.RollText]
+  --<|
+
+  --:ShowArcheryBonus|
+    --+Archery:|[$ArcheryBonus.RollText]
   --<|
 
   --:ShowOtherAttackBonus|
-    --+[&OtherAttackBonusName]|[$OtherAttackBonus]
+    --+[&OtherAttackBonusName]:|[$OtherAttackBonus]
+  --<|
+
+  --:ShowMagicWeaponAttackBonus|
+    --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
+  --<|
+
+  --:CheckForGlobalAttackMods|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
   --<|
 
   --:CheckNextAttackMod|
@@ -161,6 +184,10 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  -<|
+
   --:SavageAttackMsg|
     --+Savage Attack|[$SavageAttackDmg]
     --=ApplySavageAttack|[$SavageAttackDmg]
@@ -203,10 +230,11 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --?[$UseSavageAttack] -gt 0|>SavageAttackMsg
+    -->CheckSavageAttack|
     --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --?[$RageDamage] -ne 0|>ShowRage
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
@@ -233,6 +261,10 @@
 
   --:ShowCritFeatDamage|
     --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowRage|
+    --+Rage|[$RageDamage.RollText]
   --<|
 
   --:ShowMagicBonus|
@@ -277,4 +309,10 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
+  --:ShowMacroButtons|
+    --&AbilityName|Divine-Strike
+    --+|[br]
+    --+[u]Additional Damage Options[/u]|
+    --+|[button]Divine Strike::~[&Character]|[&AbilityName][/button]
+  --<|
 }}
