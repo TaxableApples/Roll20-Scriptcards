@@ -115,7 +115,7 @@
   --<|
 
   --:ShowOtherAttackBonus|
-    --+[&OtherAttackBonusName]:|[$OtherAttackBonus]
+    --+[&OtherAttackBonusName]:|[$OtherAttackBonus.RollText]
   --<|
 
   --:ShowMagicWeaponAttackBonus|

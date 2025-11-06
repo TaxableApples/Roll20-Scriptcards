@@ -1,0 +1,157 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|Battle Maneuver
+  --=DamageDice|1d8
+  --=ProficiencyBonus|@{selected|pb}
+  --=AttackModifier|@{selected|strength_mod}
+  --=SpellSaveDC|8 + [$ProficiencyBonus] + [$AttackModifier]
+  --&SpellSaveType|Strength
+  --=NPCSaveMod|@{target|strength_save_bonus}
+  --=CritDice|[$DamageDice.RollText]
+  --&DamageType|slashing
+  --&DamageFX|burn-smoke
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --&ChooseAttack|?{Choose Attack|Maneuvering|Trip|Goading}
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+  --&ProneMarker|back-pain
+  --&DisadvantageMarker|Attack-Dis
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->PlayEffects|
+  -->CalculateDamage|
+  --C[&ChooseAttack]|Maneuvering:>ExecuteManeuvering|Trip:>ExecuteTrip|Goading:>ExecuteGoading
+  --+|[br]
+  --+|[$DamageDice] [&DamageType] damage!
+  --X|
+
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    -->CheckResistances|
+  --<|
+  
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]+[$BonusDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+    --*Actual Damage|[$TotalDamage]
+  --<|
+
+  --:ExecuteManeuvering|
+    --+Maneuvering Attack!|
+    --+|[br]
+    --+|A friendly creature who can hear or see you may move up to half its speed without provoking an opportunity attack.
+    --+|[br]
+    -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --<|
+  
+  --:ExecuteTrip|
+    --+|Trip Attack!
+    --+|[br]
+    --+Save DC|[$SpellSaveDC]
+    --+|[br]
+    --+|On a failed you save you knock the creature prone.
+    --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+    --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+    --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+    --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+    --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+    --C[&SaveBool]|Fails:>CaseSaveFails;Trip|Succeeds:>CaseSaveSucceeds
+    -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --<|
+  
+  --:ExecuteGoading|
+    --+|Goading Attack!
+    --+|[br]
+    --+Save DC|[$SpellSaveDC]
+    --+|[br]
+    --+|On a failed save the creature has disadvantage on attack rolls against creatures other than you.
+    --&SpellSaveType|Wisdom
+    --=NPCSaveMod|@{target|wisdom_save_bonus}
+    --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+    --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+    --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
+    --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
+    --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
+    --C[&SaveBool]|Fails:>CaseSaveFails;Goad|Succeeds:>CaseSaveSucceeds
+
+    -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --<|
+
+  --:MakeSavingThrow|
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
+  --<|
+
+  --:SetSaveBool|
+    --&SaveBool|[%1%]
+  --<|
+
+  --:CaseSaveFails|
+      --+|[br]
+      --*|Save Fails!
+      --+|Creature Save Failed!
+      --?"@{target|npc_type}" -ninc "Huge" |ApplyDisadvantage
+      --?[%1%] -eq Trip -and "@{target|npc_type}" -ninc "Huge" -and "@{target|npc_type}" -ninc "Gargantuan"|>KnockTargetProne
+      --?[%1%] -eq Trip -and "@{target|npc_type}" -inc "Huge" -or "@{target|npc_type}" -inc "Gargantuan"|>CannotTrip
+      --?[%1%] -eq Goad|>ApplyDisadvantageMarker
+  --<|
+
+  --:CaseSaveSucceeds|
+      --+|[br]
+      --*|Save Suceeds!
+      --+|Creature Save Succeeded!
+  --<|
+
+  --:KnockTargetProne|
+    --+|[br]
+    --+|Target is knocked prone!
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&ProneMarker]
+  --<|
+
+  --:CannotTrip|
+    --+|[br]
+    --+|Creature cannot be knocked prone!
+  --<|
+
+  --:ApplyDisadvantageMarker|
+    --@token-mod|_ids @{target|token_id} _ingore-selected _set statusmarkers|[&DisadvantageMarker]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}

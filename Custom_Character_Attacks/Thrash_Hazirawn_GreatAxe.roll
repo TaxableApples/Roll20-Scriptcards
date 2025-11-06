@@ -7,8 +7,10 @@
   --=DamageModifier|@{selected|strength_mod}
   --&AttackModifierType|Strength
   --=MagicWeaponBonus|2
-  --=DamageDice|1d12
+  --=DamageDice|1d6
+  --=DamageDiceB|1d6
   --=CritDice|[$DamageDice.RollText]
+  --=CritDiceB|[$DamageDiceB.RollText]
   --&DamageType|necrotic
   --=DuelBonus|0
   --=ArcheryBonus|0
@@ -53,7 +55,9 @@
   --=KeptDice|[$AttackRoll.KeptDice(1)]
   --=ApplySavageAttack|0
   --=GreatWeaponExtraDice|[$DamageDice.RollText]
-  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
+  --=GreatWeaponExtraDiceCrit|[$GreatWeaponExtraDice.RollText]
+  --=GreatWeaponExtraDiceB|[$GreatWeaponExtraDice.RollText]
+  --=GreatWeaponExtraDiceCritB|[$GreatWeaponExtraDice.RollText]
 
   --/|*******************Main************************
   -->MakeAttack|
@@ -201,31 +205,44 @@
 
   --:ApplyGreatWeaponFighting|
     --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$DamageDiceB] -gt 0 -and [$DamageDiceB] -lt 3|>ShowGreatWeaponFightingB
   --<|
 
   --:ApplyGreatWeaponFightingCrit|
     --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$DamageDiceB] -gt 0 -and [$DamageDiceB] -lt 3|>ShowGreatWeaponFightingCritB
     --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
+    --?[$CritDiceB] -gt 0 -and [$CritDiceB] -lt 3|>ShowGreatWeaponFightingCritB
   --<|
 
   --:ShowGreatWeaponFighting|
-    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
+    --+GWF: Re-rolled die!|[$GreatWeaponExtraDice]
     --=DamageDice|[$GreatWeaponExtraDice]
   --<|
 
+  --:ShowGreatWeaponFightingB|
+    --+GWF: Re-rolled die!|[$GreatWeaponExtraDiceB]
+    --=DamageDiceB|[$GreatWeaponExtraDiceB]
+  --<|
+
   --:ShowGreatWeaponFightingCrit|
-    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
+    --+GWF: Re-rolled die!|[$GreatWeaponExtraDiceCrit]
     --=CritDice|[$GreatWeaponExtraDiceCrit]
   --<|
 
+  --:ShowGreatWeaponFightingCritB|
+    --+GWF: Re-rolled die!|[$GreatWeaponExtraDiceCritB]
+    --=CritDiceB|[$GreatWeaponExtraDiceCritB]
+  --<|
+
   --:Crit|
-    --+Damage Roll|[$DamageDice] [$CritDice]
+    --+Damage Roll|[$DamageDice][$DamageDiceB][$CritDice][$CritDiceB]
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
     -->CheckSavageAttack|
-    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
+    --=Damage|[$DamageDice] + [$DamageDiceB] + [$CritDice] + [$CritDiceB] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
     --?[$RageDamage] -ne 0|>ShowRage
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
@@ -235,12 +252,13 @@
   --<|
   
   --:Hit|
-    --+Damage Roll|[$DamageDice]
+    --+Damage Roll|[$DamageDice][$DamageDiceB]
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
-    --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
+
+    --=Damage|[$DamageDice] + [$DamageDiceB] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
     --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
@@ -304,5 +322,8 @@
 
   --:ShowMacroButtons|
     --+|[br]
+    --&AbilityName|Battle-Maneuver
+    --+|[u]Additional Damage Options[/u]
+    --+|[button]Battle Maneuver::~[&Character]|[&AbilityName][/button]
   --<|
 }}

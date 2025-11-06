@@ -25,7 +25,7 @@ For each of your characters, navigate to the Attributes & Abilities tab on their
 -Under 'cust_spellcasting_ability', type their plain text spellcasting ability, for example "Wisdom". This is optional, but will allow the players to see their spellcasting ability is correct when inspecting attack rolls.
 
 Placing some custom status icons on a token will flag that creature to automatically roll with advantage or disadvantage on saving throws, but you will need to create these status icons.
-From the game Launch Screen on the right side you will find a section called 'Token Marker Sets' Create two tokens named (case-sensitive): 'Advantage', 'Disadv', 'Advantage-Attack', 'Disadv-Attack' and 'CantRegainHP'. The icon itself can be anything you want. I found dice icons with up and down arrows online that work great. 
+From the game Launch Screen on the right side you will find a section called 'Token Marker Sets' Create two tokens named (case-sensitive): 'Advantage', 'Disadv', 'Attack-Adv', 'Attack-Dis' and 'CantRegainHP'. The icon itself can be anything you want. I found dice icons with up and down arrows online that work great. 
 
 -I recommended installing these additional APIs in the API MOD Menu:
     --Aura/Tint HealthColors (Provides a visual status for monster and player health, only if you want your players to see everyones health status.)

@@ -304,5 +304,8 @@
 
   --:ShowMacroButtons|
     --+|[br]
+    --&AbilityName|Battle-Maneuver
+    --+|[u]Additional Damage Options[/u]
+    --+|[button]Battle Maneuver::~[&Character]|[&AbilityName][/button]
   --<|
 }}
