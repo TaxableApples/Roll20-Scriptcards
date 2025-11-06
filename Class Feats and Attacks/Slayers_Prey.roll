@@ -1,0 +1,72 @@
+!scriptcard {{ 
+
+  --/|****************Variables*******************
+  --#overridetemplate|wizard
+  --#title|Slayer's Prey  
+  --=DamageDice|1d6
+  --=CritDice|[$DamageDice.RollText]
+  --&DamageType|piercing
+  --&DamageFX|burn-magic
+  --&Description|Starting at 3rd level, you can focus your ire on one foe, increasing the harm you inflict on it. As a bonus action, you designate one creature you can see within 60 feet of you as the target of this feature. The first time each turn that you hit that target with a weapon attack, it takes an extra 1d6 damage from the weapon. This benefit lasts until you finish a short or long rest. It ends early if you designate a different creature.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=Damage|0
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->PlayEffects|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    --=Damage|[$DamageDice] + [$FeatDamage] [&FeatDamageType]
+    --+|[$DamageDice] [&DamageType] damage!
+    -->CheckResistances|
+  --<|
+  
+  --:CheckResistances|
+    --?"[*T:npc_resistances]" -inc [&DamageType]|ApplyResistance
+    --?"[*T:npc_immunities]" -inc [&DamageType]|ApplyImmunity
+    --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|ApplyVulnerability
+  --<|
+
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [&DamageType] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --*|Creature is immune to [&DamageType] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage]
+    --*|Creature is vulnerable to [&DamageType] damage!
+  --<|
+
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:CalculateDamage|
+    --=TotalDamage|[$Damage]+[$BonusDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+  
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+}}

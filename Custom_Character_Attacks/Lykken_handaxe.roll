@@ -2,7 +2,7 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|Hand Axe
+  --#title|Handaxe
   --=AttackModifier|@{selected|dexterity_mod}
   --=DamageModifier|@{selected|dexterity_mod}
   --&AttackModifierType|Dexterity
@@ -168,15 +168,12 @@
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
     --=CritFeatADamage|[$FeatADamageValue.RollText]
-    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADamageOpt]
+    --+[&FeatAName]|[$FeatADamageValue][$CritFeatADamage]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
-    --+[&FeatAName]|[$FeatADamage]
+    --+[&FeatAName]|[$FeatADamageValue]
   --<|
 
   --:CheckFeatB|
@@ -194,15 +191,12 @@
   --<|
 
   --:CritFeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
-    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDamageOutput]
+    --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
-    --+[&FeatBName]|[$FeatBDamage]
+    --+[&FeatBName]|[$FeatBDamageValue]
   --<|
 
   --:ApplyGreatWeaponFighting|
@@ -225,15 +219,14 @@
   --<|
 
   --:Crit|
-    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
-    --+Damage Roll|[$DamageRollText]
+    --+Damage Roll|[$DamageDice] [$CritDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
     -->CheckSavageAttack|
     --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
     --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
     --?[$RageDamage] -ne 0|>ShowRage
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
@@ -248,7 +241,7 @@
     -->CheckFeatB|
     --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
@@ -268,7 +261,7 @@
   --<|
 
   --:ShowMagicBonus|
-    --+Magic Bonus|[$MagicWeaponBonus]
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
   --<|
 
   --:ShowProficiencyBonus|

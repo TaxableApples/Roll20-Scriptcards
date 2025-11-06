@@ -11,18 +11,26 @@
   --=CritDice|[$DamageDice.RollText]
   --&DamageType|magic-bludgeoning
   --=DuelBonus|0
+  --=ArcheryBonus|0
+  --=OtherAttackBonus|0
+  --&OtherAttackBonusName|None
   --&FeatDamageType|None
   --=FeatDamage|0
   --=CritFeatDamage|0
+  --=RageDamage|0
   --&FeatAName|None
   --=UseFeatA|0
   --=FeatADamageValue|0
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
+  --=UseGreatWeaponFighting|0
+  --=UseSavageAttack|0
+  --=SavageAttackDmg|[$DamageDice.RollText]
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
+  --&Character|@{selected|character_name}
   --=TargetAC|@{target|npc_ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
@@ -43,11 +51,15 @@
   --=DiceRolled|[$AttackRoll.RollCount]
   --=DroppedDice|[$AttackRoll.DroppedDice(1)]
   --=KeptDice|[$AttackRoll.KeptDice(1)]
+  --=ApplySavageAttack|0
+  --=GreatWeaponExtraDice|[$DamageDice.RollText]
+  --=GreatWeaponExtraDiceCrit|[$DamageDice.RollText]
 
   --/|*******************Main************************
   -->MakeAttack|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
+  -->ShowMacroButtons|
   --X|
   
   --/|****************Subroutines********************
@@ -55,9 +67,14 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
-    --+Attack Bonus| [$AttackBonus]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$ArcheryBonus] + [$OtherAttackBonus] + [$MagicWeaponBonus]
+    --+Attack Bonus:| [$AttackModifier.RollText]
+    --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
+    --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
+    --?[$DuelBonus] -gt 0|>ShowDuelBonus
+    --?[$ArcheryBonus] -gt 0|>ShowArcheryBonus
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus
+    --?[$OtherAttackBonus] -gt 0|>ShowOtherAttackBonus
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -83,6 +100,26 @@
   --:DisplaySnakeEyes|
     --+[f18]|Snake Eyes![/f]
     --+| 
+  --<|
+
+  --:ShowGlobalAttackMod|
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:ShowDuelBonus|
+    --+Duel:|[$DuelBonus.RollText]
+  --<|
+
+  --:ShowArcheryBonus|
+    --+Archery:|[$ArcheryBonus.RollText]
+  --<|
+
+  --:ShowOtherAttackBonus|
+    --+[&OtherAttackBonusName]:|[$OtherAttackBonus]
+  --<|
+
+  --:ShowMagicWeaponAttackBonus|
+    --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
   --<|
 
   --:CheckForGlobalAttackMods|
@@ -131,15 +168,12 @@
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
     --=CritFeatADamage|[$FeatADamageValue.RollText]
-    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADamageOpt]
+    --+[&FeatAName]|[$FeatADamageValue][$CritFeatADamage]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
-    --+[&FeatAName]|[$FeatADamage]
+    --+[&FeatAName]|[$FeatADamageValue]
   --<|
 
   --:CheckFeatB|
@@ -147,27 +181,54 @@
     --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
   --<|
 
+  --:CheckSavageAttack|
+    --?[$UseSavageAttack] -gt 0|SavageAttackMsg
+  --<|
+
+  --:SavageAttackMsg|
+    --+Savage Attack|[$SavageAttackDmg]
+    --=ApplySavageAttack|[$SavageAttackDmg]
+  --<|
+
   --:CritFeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
-    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDamageOutput]
+    --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
-    --+[&FeatBName]|[$FeatBDamage]
+    --+[&FeatBName]|[$FeatBDamageValue]
+  --<|
+
+  --:ApplyGreatWeaponFighting|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+  --<|
+
+  --:ApplyGreatWeaponFightingCrit|
+    --?[$DamageDice] -lt 3|>ShowGreatWeaponFighting
+    --?[$CritDice] -lt 3|>ShowGreatWeaponFightingCrit
+  --<|
+
+  --:ShowGreatWeaponFighting|
+    --+GWF: Re-rolled Damage!|[$GreatWeaponExtraDice]
+    --=DamageDice|[$GreatWeaponExtraDice]
+  --<|
+
+  --:ShowGreatWeaponFightingCrit|
+    --+GWF: Re-rolled Crit Damage!|[$GreatWeaponExtraDiceCrit]
+    --=CritDice|[$GreatWeaponExtraDiceCrit]
   --<|
 
   --:Crit|
-    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
-    --+Damage Roll|[$DamageRollText]
+    --+Damage Roll|[$DamageDice] [$CritDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
-    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    -->CheckSavageAttack|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFightingCrit
+    --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$ApplySavageAttack] + [$RageDamage] + [$MagicWeaponBonus]
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
+    --?[$RageDamage] -ne 0|>ShowRage
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --+|[f18][#ff0000]Critical Hit[/#] for [$Damage] [&DamageType] damage![/f]
     -->CheckResistances|
@@ -178,9 +239,10 @@
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
+    --?[$UseGreatWeaponFighting] -gt 0|>ApplyGreatWeaponFighting
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
-    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw]  
+    --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --+|[f18]Attack Hit for [$Damage] [&DamageType] Damage![/f]
     -->CheckResistances|
@@ -194,8 +256,12 @@
     --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
   --<|
 
+  --:ShowRage|
+    --+Rage|[$RageDamage.RollText]
+  --<|
+
   --:ShowMagicBonus|
-    --+Magic Bonus|[$MagicWeaponBonus]
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
   --<|
 
   --:ShowProficiencyBonus|
@@ -236,4 +302,7 @@
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
   --<|
 
+  --:ShowMacroButtons|
+    --+|[br]
+  --<|
 }}

@@ -62,8 +62,10 @@
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
-    --+Attack Bonus| [$AttackBonus]
+    --+Attack Bonus:| [$AttackModifier.Raw]
+    --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
+    --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus|
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -89,6 +91,14 @@
   --:DisplaySnakeEyes|
     --+[f18]|Snake Eyes![/f]
     --+| 
+  --<|
+
+  --:ShowGlobalAttackMod|
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+  
+  --:ShowMagicWeaponAttackBonus|
+    --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
   --<|
 
   --:CheckForGlobalAttackMods|
@@ -137,15 +147,12 @@
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
     --=CritFeatADamage|[$FeatADamageValue.RollText]
-    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADamageOpt]
+    --+[&FeatAName]|[$FeatADamageValue][$CritFeatADamage]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
-    --+[&FeatAName]|[$FeatADamage]
+    --+[&FeatAName]|[$FeatADamageValue]
   --<|
 
   --:CheckFeatB|
@@ -154,20 +161,16 @@
   --<|
 
   --:CritFeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
-    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDamageOutput]
+    --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
-    --+[&FeatBName]|[$FeatBDamage]
+    --+[&FeatBName]|[$FeatBDamageValue]
   --<|
 
   --:Crit|
-    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
-    --+Damage Roll|[$DamageRollText]
+    --+Damage Roll|[$DamageDice] [$CritDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
@@ -179,6 +182,7 @@
   --<|
   
   --:Hit|
+    --=Damage|[$DamageDice] + [$FeatDamage]
     --+Damage Roll|[$DamageDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
@@ -200,7 +204,7 @@
   --<|
 
   --:ShowMagicBonus|
-    --+Magic Bonus|[$MagicWeaponBonus]
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
   --<|
 
   --:ShowProficiencyBonus|

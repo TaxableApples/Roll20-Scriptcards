@@ -24,7 +24,7 @@
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
-  --=TargetAC|@{target|npc_ac}
+  --=TargetAC|@{target|ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
   --=Resistance|0
@@ -58,8 +58,10 @@
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
     --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
-    --+Attack Bonus| [$AttackBonus]
+    --+Attack Bonus:| [$AttackModifier.Raw]
+    --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
+    --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus|
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -85,6 +87,14 @@
   --:DisplaySnakeEyes|
     --+[f18]|Snake Eyes![/f]
     --+| 
+  --<|
+
+  --:ShowGlobalAttackMod|
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+  
+  --:ShowMagicWeaponAttackBonus|
+    --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
   --<|
 
   --:CheckForGlobalAttackMods|
@@ -134,8 +144,7 @@
 
   --:CritFeatAMsg|
     --=CritFeatADamage|[$CritFeatADamage]
-    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADamageOpt]
+    --+[&FeatAName]|[$FeatADamage][$CritFeatADamage]
   --<|
 
   --:FeatAMsg|
@@ -151,8 +160,7 @@
   --:CritFeatBMsg|
     --=FeatBDamage|[$FeatBDamage]
     --=CritFeatBDamage|[$CritFeatBDamage]
-    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDamageOutput]
+    --+[&FeatBName]|[$FeatBDamage][$CritFeatBDamage]
   --<|
 
   --:FeatBMsg|
@@ -161,8 +169,7 @@
   --<|
 
   --:Crit|
-    --=DamageRollText|[$DamageDice] + [$CritDice] [CRIT]
-    --+Damage Roll|[$DamageRollText]
+    --+Damage Roll|[$DamageDice] [$CritDice]
     -->CheckForGlobalDamageMods|
     -->CheckFeatA|
     -->CheckFeatB|
@@ -194,7 +201,7 @@
   --<|
 
   --:ShowMagicBonus|
-    --+Magic Bonus|[$MagicWeaponBonus]
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
   --<|
 
   --:ShowProficiencyBonus|
@@ -250,6 +257,6 @@
     --?[$HPAfterHealing] -gt @{selected|hp|max}|=Healing;[$MissingHP]|=Healing;[%3%]
     --@token-mod|_ids [%1%] _set bar[%2%]_value|+[$Healing]
     --+|[br]
-    --+@{selected|token_name} Healed|[$Healing]
+    --+@{selected|token_name}healed|[$Healing]
   --<|
 }}

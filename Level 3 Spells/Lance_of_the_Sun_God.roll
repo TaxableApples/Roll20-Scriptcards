@@ -11,7 +11,6 @@
   --=CritDice|[$DamageDice.RollText]
   --=ChargeAttack|?{Charge Attack|Yes,1|No,0}
   --&DamageType|force
-  --=DuelBonus|0
   --&FeatDamageType|radiant
   --=FeatDamage|2d8
   --=CritFeatDamage|2d8
@@ -21,10 +20,12 @@
   --&FeatBName|None
   --=UseFeatB|0
   --=FeatBDamageValue|0
+  --&DamageFX|beam-holy
+  --&Description|You invoke a lance made of force and light. The lance glows brightly, providing light as a lantern. You are considered proficient with this weapon, and it has the same weapon properties as a nonmagical lance. On a successful melee attack with the lance, you deal 1d12 force damage and 2d8 radiant damage. You can perform a charge attack with the lance. If you move at least 20 feet straight toward a target and hit with the lance on the same turn, you double the damage of the attack.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}
   --#emoteText|@{selected|token_name}
-  --=TargetAC|@{target|npc_ac}
+  --=TargetAC|@{target|ac}
   --=ProficiencyBonus|@{selected|pb}
   --=CritRoll|20
   --=Resistance|0
@@ -39,7 +40,6 @@
   --=CritFeatBDamage|0
   --=FeatADamage|0
   --=CritFeatADamage|0
-  --&DamageFX|beam-holy
   --&NoModText|NoRepeatingAttributeLoaded
   --=Zero|0
   --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1|Coup Des Gras,3m20kh1}
@@ -49,9 +49,11 @@
 
   --/|*******************Main************************
   -->MakeAttack|
+  -->PlayEffects|
   -->CalculateDamage|
   -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
-  -->PlayEffects|
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|
   
   --/|****************Subroutines********************
@@ -59,9 +61,11 @@
     -->CheckForAdvantage|
     --+Attack Roll| [$AttackRoll]
     -->CheckForGlobalAttackMods|
-    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$DuelBonus] + [$MagicWeaponBonus]
-    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$DuelBonus] [DUEL] + [$MagicWeaponBonus] [MAGIC]
-    --+Attack Bonus| [$AttackBonus]
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
+    --+Attack Bonus:| [$AttackModifier.Raw]
+    --+ProficiencyBonus:|[$ProficiencyBonus.RollText]
+    --?[$GlobalAttackMod] -gt 0|>ShowGlobalAttackMod
+    --?[$MagicWeaponBonus] -gt 0|>ShowMagicWeaponAttackBonus|
     --+|[f18]Total Attack [$Attack][/f]
     --+|[hr]
     --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
@@ -87,6 +91,14 @@
   --:DisplaySnakeEyes|
     --+[f18]|Snake Eyes![/f]
     --+| 
+  --<|
+
+  --:ShowGlobalAttackMod|
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+  
+  --:ShowMagicWeaponAttackBonus|
+    --+Magic Weapon Bonus:|[$MagicWeaponBonus.RollText]
   --<|
 
   --:CheckForGlobalAttackMods|
@@ -135,15 +147,12 @@
   --<|
 
   --:CritFeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
     --=CritFeatADamage|[$FeatADamageValue.RollText]
-    --=FeatADamageOpt|[$FeatADamage] + [$CritFeatADamage] [CRIT]
-    --+[&FeatAName]|[$FeatADamageOpt]
+    --+[&FeatAName]|[$FeatADamageValue][$CritFeatADamage]
   --<|
 
   --:FeatAMsg|
-    --=FeatADamage|[$FeatADamageValue]
-    --+[&FeatAName]|[$FeatADamage]
+    --+[&FeatAName]|[$FeatADamageValue]
   --<|
 
   --:CheckFeatB|
@@ -152,15 +161,12 @@
   --<|
 
   --:CritFeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
     --=CritFeatBDamage|[$FeatBDamageValue.RollText]
-    --=FeatBDamageOutput|[$FeatBDamage] + [$CritFeatBDamage] [CRIT]
-    --+[&FeatBName]|[$FeatBDamageOutput]
+    --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
   --<|
 
   --:FeatBMsg|
-    --=FeatBDamage|[$FeatBDamageValue]
-    --+[&FeatBName]|[$FeatBDamage]
+    --+[&FeatBName]|[$FeatBDamageValue]
   --<|
 
   --:Crit|
@@ -170,7 +176,7 @@
     -->CheckFeatA|
     -->CheckFeatB|
     --=Damage|[$DamageDice] + [$CritDice] + [$DamageModifier] + [$FeatADamage] + [$CritFeatADamage] + [$FeatBDamage] + [$CritFeatBDamage] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatDamage] + [$CritFeatDamage] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw] 
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
     --=FinalDamage|[$Damage]
@@ -185,7 +191,7 @@
     -->CheckFeatA|
     -->CheckFeatB|
     --=Damage|[$DamageDice] + [$DamageModifier] + [$FeatADamage] + [$FeatBDamage] + [$FeatDamage]  + [$GlobalDamageMod] + [$MagicWeaponBonus]
-    --+[&AttackModifierType] Mod|[$DamageModifier] 
+    --+[&AttackModifierType] Mod|[$DamageModifier.Raw] 
     --?[$MagicWeaponBonus] -ne 0|>ShowMagicBonus  
     --?[$FeatDamage] -ne 0|>ShowFeatDamage
     --?[$ChargeAttack] -gt 0|>DoubleDamage|>SingleDamage
@@ -212,7 +218,7 @@
   --<|
 
   --:ShowMagicBonus|
-    --+Magic Bonus|[$MagicWeaponBonus]
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
   --<|
 
   --:ShowProficiencyBonus|
@@ -244,14 +250,18 @@
     --=Vulnerability|[$Damage]
     --*|Creature is vulnerable to [&DamageType] damage!
   --<|
-  
-  --:CalculateDamage|
-    --=TotalDamage|[$FinalDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
-  --<|
 
   --:PlayEffects|
     --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
   --<| 
+    
+  --:CalculateDamage|
+    --=TotalDamage|[$FinalDamage]-[$Resistance]-[$Immunity]+[$Vulnerability]
+  --<|
+
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
 
   --:ApplyDamage|
     --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]

@@ -69,7 +69,7 @@
 
   --:CaseSaveFails|
       --*|Save Fails!
-      --+|Save Failed!
+      --+|Creature Save Failed!
       -->CalculateDamage|[$Damage];Normal
       --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
       --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
@@ -78,7 +78,7 @@
 
   --:CaseSaveSucceeds|
       --*|Save Suceeds!
-      --+|[#ff0000]Save Succeeded![/#]
+      --+|Creature Save Succeeded!
       -->CalculateDamage|0;Normal
   --<|
   
