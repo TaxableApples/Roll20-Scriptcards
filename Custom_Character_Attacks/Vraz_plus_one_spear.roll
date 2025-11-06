@@ -2,7 +2,7 @@
 
   --/|****************Declarations*******************
   --#overridetemplate|wizard
-  --#title|+1 Spear
+  --#title|Spear +1
   --=AttackModifier|@{selected|strength_mod}
   --=DamageModifier|@{selected|strength_mod}
   --&AttackModifierType|Strength
@@ -186,7 +186,7 @@
 
   --:CheckSavageAttack|
     --?[$UseSavageAttack] -gt 0|SavageAttackMsg
-  -<|
+  --<|
 
   --:SavageAttackMsg|
     --+Savage Attack|[$SavageAttackDmg]

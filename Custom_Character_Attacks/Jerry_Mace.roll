@@ -187,7 +187,7 @@
 
   --:CheckSavageAttack|
     --?[$UseSavageAttack] -gt 0|SavageAttackMsg
-  -<|
+  --<|
 
   --:SavageAttackMsg|
     --+Savage Attack|[$SavageAttackDmg]

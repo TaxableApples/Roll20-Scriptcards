@@ -11,7 +11,10 @@
   --/|*******************Main************************
   -->CalculateHealing|
   -->ApplyHealing|@{selected|token_id};1;[$Healing]
-  --+|[f18]Healing [&SpellBonus] + [$HealingDice][/f]
+  --+Character Level Bonus|[&SpellBonus]
+  --+Roll|[$HealingDice]
+  --=TotalHealing|[$Healing]+[&SpellBonus]
+  --+Total HP Healed|[$TotalHealing]
   --+|[br]
   --+|[rbutton]Show Description::OutputTxt[/rbutton]
   --X|

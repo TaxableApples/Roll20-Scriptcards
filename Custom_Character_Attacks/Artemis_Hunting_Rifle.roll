@@ -2,7 +2,7 @@
 
   --/|****************Variables*******************
   --#overridetemplate|wizard
-  --#title|Hunting Rifle
+  --#title|Hunting Rifle +2
   --=AttackModifier|@{selected|dexterity_mod}
   --=DamageModifier|@{selected|dexterity_mod}
   --&AttackModifierType|Dexterity
@@ -186,7 +186,7 @@
 
   --:CheckSavageAttack|
     --?[$UseSavageAttack] -gt 0|SavageAttackMsg
-  -<|
+  --<|
 
   --:SavageAttackMsg|
     --+Savage Attack|[$SavageAttackDmg]
