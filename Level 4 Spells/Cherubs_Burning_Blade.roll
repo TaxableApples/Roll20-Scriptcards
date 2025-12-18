@@ -1,0 +1,292 @@
+!scriptcard  {{
+  --/|**********Variables***************
+  --#overridetemplate|wizard
+  --#title|Cherub's Burning Blade
+  --=AttackModifier|@{selected|spellcasting_ability}
+  --&AttackModifierType|@{selected|cust_spellcasting_ability}
+  --=MagicWeaponBonus|0
+  --=FireDice|?{Spell Level?|4,2d6|5,2d6|6,3d6|7,3d6|8,4d6|9,4d6}
+  --=RadiantDice|[$FireDice]
+  --=CritFireDice|[$FireDice.RollText]
+  --=CritRadiantDice|[$RadiantDice.RollText]
+  --&DamageTypeA|fire
+  --&DamageTypeB|radiant
+  --&FeatDamageType|None
+  --=FeatDamage|0
+  --=CritFeatDamage|0
+  --&FeatAName|None
+  --=UseFeatA|0
+  --=FeatADamageValue|0
+  --&FeatBName|None
+  --=UseFeatB|0
+  --=FeatBDamageValue|0
+  --&DamageFX|burn-fire
+  --&Description|A sword made of holy fire blazes to life in your hand. The size and shape of the blade conforms to your will, but it is never larger than a one-handed weapon sized for a Medium creature. If you let go of the blade, it disappears, but if you maintain concentration on the spell, you can evoke the blade again as a bonus action. [br]You can use your action to make a melee attack with the burning blade. On a hit, the target takes 2d6 fire and 2d6 radiant damage. On a critical hit, the target catches fire. The burning blade sheds bright light in a 10-foot radius and dim light for an additional 10 feet. [br]At Higher Levels: When you cast this spell using a spell slot of 6th level or higher, both the fire damage and radiant damage increase by 1d6 for every two slot levels above 4th.
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText|@{selected|token_name}
+  --=TargetAC|@{target|npc_ac}
+  --=ProficiencyBonus|@{selected|pb}
+  --=CritRoll|20
+  --=Resistance|0
+  --=Immunity|0
+  --=Vulnerability|0
+  --=TotalDamage|0
+  --=GlobalAttackMod|0
+  --=GlobalDamageMod|0
+  --=CritGlobalDamageMod|0
+  --=FeatBDamage|0
+  --=CritFeatBDamage|0
+  --=FeatADamage|0
+  --=CritFeatADamage|0
+  --&NoModText|NoRepeatingAttributeLoaded
+  --=Zero|0
+  --=AttackRoll|?{Attack|Standard,1d20|Advantage,2d20kh1|Disadvantage,2d20kl1|Coup Des Gras,3m20kh1}
+  --=DiceRolled|[$AttackRoll.RollCount]
+  --=DroppedDice|[$AttackRoll.DroppedDice(1)]
+  --=KeptDice|[$AttackRoll.KeptDice(1)]
+
+  --/|*******************Main************************
+  -->MakeAttack|
+  -->PlayEffects|
+  -->ApplyStatus|
+  -->CalculateDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$AppliedTotal]
+  --+|[br]
+  --+|[rbutton]Show Description::OutputTxt[/rbutton]
+  --X|
+  
+  --/|****************Subroutines********************
+  --:MakeAttack|
+    -->CheckForAdvantage|
+    --+Attack Roll| [$AttackRoll]
+    -->CheckForGlobalAttackMods|
+    --=Attack|[$AttackRoll] + [$AttackModifier] + [$ProficiencyBonus] + [$GlobalAttackMod] + [$MagicWeaponBonus]
+    --=AttackBonus|[$AttackModifier] [&AttackModifierType] + [$ProficiencyBonus] [PROF] + [$MagicWeaponBonus] [MAGIC]
+    --+Attack Bonus| [$AttackBonus]
+    --+|[f18]Total Attack [$Attack][/f]
+    --+|[hr]
+    --?[$AttackRoll.Base] -eq [$CritRoll]|Crit
+    --?[$Attack.Total] -ge [$TargetAC]|Hit | Miss
+  --<|
+
+  --:CheckForAdvantage|
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -lt [$KeptDice]|DisplayAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -gt [$KeptDice]|DisplayDisAdvantage
+    --?[$DiceRolled] -gt 1 -and [$DroppedDice] -eq [$KeptDice]|DisplaySnakeEyes
+  --<|
+
+  --:DisplayAdvantage|
+    --+|[f18]Advantage![/f]
+    --+| 
+  --<|
+
+  --:DisplayDisAdvantage|
+    --+|[f18]Disadvantage![/f]
+    --+| 
+  --<|
+
+  --:DisplaySnakeEyes|
+    --+[f18]|Snake Eyes![/f]
+    --+| 
+  --<|
+
+  --:CheckForGlobalAttackMods|
+    --Rfirst|@{selected|character_id};repeating_tohitmod
+    -->CheckNextAttackMod|
+  --<|
+
+  --:CheckNextAttackMod|
+      --?[*R:global_attack_active_flag] -eq 1|ApplyGlobalAttackMod
+      --Rnext|
+      --?"[*R:global_attack_name]" -ne [&NoModText]|CheckNextAttackMod
+  --<|
+
+  --:ApplyGlobalAttackMod|
+    --=GlobalAttackMod|[*R:global_attack_roll]
+    --+[*R:global_attack_name]|[$GlobalAttackMod]
+  --<|
+
+  --:CheckForGlobalDamageMods|
+    --Rfirst|@{selected|character_id};repeating_damagemod
+    -->CheckNextDamageMod|
+  --<|
+
+  --:CheckNextDamageMod|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|CritApplyGlobalDamageMod
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [*R:global_damage_active_flag] -eq 1|ApplyGlobalDamageMod
+    --Rnext|
+    --?"[*R:global_damage_name]" -ne [&NoModText]|CheckNextDamageMod
+  --<|
+
+  --:CritApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --=CritGlobalDamageMod|[*R:global_damage_damage]
+    --=GlobalCritDamageTxt|[$GlobalDamageMod] + [$CritGlobalDamageMod] [CRIT]
+    --+[*R:global_damage_name]|[$GlobalCritDamageTxt]
+  --<|
+
+  --:ApplyGlobalDamageMod|
+    --=GlobalDamageMod|[*R:global_damage_damage]
+    --+[*R:global_damage_name]|[$GlobalDamageMod]
+  --<|
+
+  --:CheckFeatA|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatA] -gt [$Zero]| CritFeatAMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatA] -gt [$Zero]| FeatAMsg
+  --<|
+
+  --:CritFeatAMsg|
+    --=CritFeatADamage|[$FeatADamageValue.RollText]
+    --+[&FeatAName]|[$FeatADamageValue][$CritFeatADamage]
+  --<|
+
+  --:FeatAMsg|
+    --+[&FeatAName]|[$FeatADamageValue]
+  --<|
+
+  --:CheckFeatB|
+    --?[$AttackRoll.Base] -eq [$CritRoll] -and [$UseFeatB] -gt [$Zero]| CritFeatBMsg
+    --?[$AttackRoll.Base] -ne [$CritRoll] -and [$UseFeatB] -gt [$Zero]| FeatBMsg
+  --<|
+
+  --:CritFeatBMsg|
+    --=CritFeatBDamage|[$FeatBDamageValue.RollText]
+    --+[&FeatBName]|[$FeatBDamageValue][$CritFeatBDamage]
+  --<|
+
+  --:FeatBMsg|
+    --+[&FeatBName]|[$FeatBDamageValue]
+  --<|
+
+  --:Crit|
+    --+Damage Rolls|[br]Fire: [$FireDice] + [$CritFireDice] [CRIT] [br]Radiant: [$RadiantDice] + [$CritRadiantDice] [CRIT]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --/| We apply mods to Fire damage primarily for calculation simplicity
+    --=RawFireDamage|[$FireDice] + [$CritFireDice] + [$GlobalDamageMod] + [$CritGlobalDamageMod] + [$FeatADamage] + [$CritFeatADamage] + [$MagicWeaponBonus]
+    --=RawRadiantDamage|[$RadiantDice] + [$CritRadiantDice] + [$FeatBDamage] + [$CritFeatBDamage] + [$FeatDamage] + [$CritFeatDamage]
+    
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus
+    --?[$FeatDamage] -ne 0|>ShowCritFeatDamage
+    --+|[f18][#ff0000]Critical Hit[/#]![/f]
+    --+|Target catches fire! (2d6 fire damage at start of turn until doused)
+    
+    --=Damage|[$RawFireDamage]
+    -->CheckResistances|[&DamageTypeA]
+    --=CalcFire|[$Damage] - [$Resistance] - [$Immunity]
+    --=AppliedFire|[$CalcFire] + [$Vulnerability]
+    
+    --=Damage|[$RawRadiantDamage]
+    -->CheckResistances|[&DamageTypeB]
+    --=CalcRadiant|[$Damage] - [$Resistance] - [$Immunity]
+    --=AppliedRadiant|[$CalcRadiant] + [$Vulnerability]
+    
+    --=TotalDamage|[$CalcFire] + [$CalcRadiant]
+    --=AppliedTotal|[$AppliedFire] + [$AppliedRadiant]
+    
+    -->CritApplyStatus|
+  --<|
+  
+  --:Hit|
+    --+Damage Rolls|[br]Fire: [$FireDice] [br]Radiant: [$RadiantDice]
+    -->CheckForGlobalDamageMods|
+    -->CheckFeatA|
+    -->CheckFeatB|
+    --=RawFireDamage|[$FireDice] + [$GlobalDamageMod] + [$FeatADamage] + [$MagicWeaponBonus]
+    --=RawRadiantDamage|[$RadiantDice] + [$FeatBDamage] + [$FeatDamage]
+
+    --?[$MagicBonus] -ne 0|>ShowMagicBonus  
+    --?[$FeatDamage] -ne 0|>ShowFeatDamage
+    --+|[f18]Attack Hit![/f]
+
+    --=Damage|[$RawFireDamage]
+    -->CheckResistances|[&DamageTypeA]
+    --=CalcFire|[$Damage] - [$Resistance] - [$Immunity]
+    --=AppliedFire|[$CalcFire] + [$Vulnerability]
+    
+    --=Damage|[$RawRadiantDamage]
+    -->CheckResistances|[&DamageTypeB]
+    --=CalcRadiant|[$Damage] - [$Resistance] - [$Immunity]
+    --=AppliedRadiant|[$CalcRadiant] + [$Vulnerability]
+    
+    --=TotalDamage|[$CalcFire] + [$CalcRadiant]
+    --=AppliedTotal|[$AppliedFire] + [$AppliedRadiant]
+  --<|
+
+  --:ShowFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage]
+  --<|
+
+  --:ShowCritFeatDamage|
+    --+[&FeatDamageType]|[$FeatDamage] + [$CritFeatDamage]
+  --<|
+
+  --:ShowMagicBonus|
+    --+Magic Bonus|[$MagicWeaponBonus.RollText]
+  --<|
+
+  --:ShowProficiencyBonus|
+    --+Proficiency Bonus|[$ProficiencyBonus]
+  --<|
+
+  --:Miss|
+    --=TotalDamage|0
+    --=AppliedTotal|0
+    --+|[f18]Attack [#ff0000]missed[/#]![/f]
+  --<|
+
+  --:CheckResistances|
+    --=Resistance|0
+    --=Immunity|0
+    --=Vulnerability|0
+    --=IsImmune|0
+    --?"[*T:npc_immunities]" -inc [%1%]|ApplyImmunity|[%1%]
+    --?[$IsImmune] -eq 1|<
+    --?"[*T:npc_resistances]" -inc [%1%]|ApplyResistance|[%1%]
+    --?"[*T:npc_vulnerabilities]" -inc [%1%]|ApplyVulnerability|[%1%]
+  --<|
+    
+  --:ApplyResistance|
+    --=Resistance|[$Damage] \ 2
+    --*|Creature is resistant to [%1%] damage!
+  --<|
+  
+  --:ApplyImmunity|
+    --=Immunity|[$Damage]
+    --=IsImmune|1
+    --*|Creature is immune to [%1%] damage!
+  --<|
+  
+  --:ApplyVulnerability|
+    --=Vulnerability|[$Damage] - [$Resistance]
+    --*|Creature is vulnerable to [%1%] damage!
+  --<|
+  
+  --:PlayEffects|
+    --vtoken|@{target|token_id} [&DamageFX]
+  --<|
+
+  --:ApplyStatus|
+    --@token-mod|_ignore-selected _ids @{selected|token_id} _set emits_bright_light|on emits_low_light|on bright_light_distance|10 low_light_distance|20
+  --<|
+  
+  --:CritApplyStatus|
+     --@token-mod|_ignore-selected _ids @{target|token_id} _set emits_bright_light|on bright_light_distance|10
+  --<|
+  
+  --:CalculateDamage|
+    --+Total Damage|[$TotalDamage]
+    --*Applied Damage|[$AppliedTotal]
+  --<|
+
+  --:OutputTxt|
+    --+|[f11][&Description][/f]
+  --<|
+  
+  --:ApplyDamage|
+    --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+  --<|
+
+}}

@@ -6,8 +6,8 @@
   --=Level|@{selected|level}
   --=DamageDice|[?[$Level] -gt 6|1d6|2d6]
   --=CritDice|[$DamageDice.RollText]
-  --&DamageType|thunder
-  --&DamageFX|burn-frost
+  --&DamageType|fire
+  --&DamageFX|burn-fire
   --&Description|Starting when you choose this origin at 1st level, you are able to channel your elemental power into a swirling aura. As a bonus action, you can surround yourself in a magical aura of elemental material or energy appropriate to your heritage element for 1 minute. While the aura persists, you gain the following benefits: When you are attacked, you can use your reaction to impose disadvantage on the attack roll. When you cast a spell of 1st level or higher, the aura around you intensifies until the start of your next turn. During this time, any creature that ends its turn within 5 feet of you or that enters that area takes 1d6 damage of the type associated with your heritage element. This damage increases to 2d6 when you reach 7th level. You can use this feature twice. You regain all expended uses when you finish a long rest.
   --#sourceToken|@{selected|token_id}
   --#targetToken|@{target|token_id}

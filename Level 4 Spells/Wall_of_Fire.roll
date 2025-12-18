@@ -1,50 +1,34 @@
 !scriptcard {{
-    --/|To use this spell, place a 3 x 14 firewall graphic on the map, and select the graphic as the target. Creatures in the 2 x 13 area on top will be in the area of effect, and will take damage.
+    --/|Damage applies to a single target at a time. Can be placed on a 14x1 NPC Firewall token.
     
     --/|**********Variables***************
     --#overridetemplate|wizard
-    --#title|Wall of Fire
-    --&SpellRadius|4
-    --=SpellSaveDC|@{selected|spell_save_dc}
+    --#title|Wall of Fire  
     --&SpellSaveType|Dexterity
+    --=SpellSaveDC|@{selected|spell_save_dc}
+    --=NPCSaveMod|@{target|dexterity_save_bonus}
     --=BonusDamage|0
     --&BonusDamageType|[FEAT]
     --=DamageDice|?{Spell Level?|4,5d8|5,6d8|6,7d8|7,8d8|8,9d8|9,10d8}
     --&DamageType|fire
-    --&DamageFX|beam-fire
-    --&DamageFXB|nova-fire
+    --&DamageFX|burn-fire
     --&Description|You create a wall of fire on a solid surface within range. You can make the wall up to 60 feet long, 20 feet high, and 1 foot thick, or a ringed wall up to 20 feet in diameter, 20 feet high, and 1 foot thick. The wall is opaque and lasts for the duration. When the wall appears, each creature within its area must make a Dexterity saving throw. On a failed save, a creature takes 5d8 fire damage, or half as much damage on a successful save. One side of the wall, selected by you when you cast this spell, deals 5d8 fire damage to each creature that ends its turn within 10 feet of that side or inside the wall. A creature takes the same damage when it enters the wall for the first time on a turn or ends its turn there. The other side of the wall deals no damage. The other side of the wall deals no damage. At Higher Levels. When you cast this spell using a level spell slot 5 or more, the damage of the spell increases by 1d8 for each level of higher spell slot to 4.
     --#sourceToken|@{selected|token_id}
+    --#targetToken|@{target|token_id}
     --#emoteText|@{selected|token_name}
-    --#targettoken|@{target|token_id}
-    --~|array;pagetokens;AllTokens;@{selected|token_id}
-    --=WallRotation|[*T:t-rotation]%360
 
     --/|*******************Main************************
-    -->RollDamage|
     -->OutputText|
-    --%CurrentToken|foreach;AllTokens 
-        --&CharName|[*[&CurrentToken]:character_name]
-        --?[&CharName(length)] -le 0|%
-        -->GetTargetDistance|[&CurrentToken]
-        -->GetTargetAngle|[&CurrentToken]
-        --?[$TargetDistance] -gt 6|%
-        --&Hit|0
-        -->CheckForHits|[$TargetDistance];[$RelativeAngle];[$CharName]
-        --?[&Hit] -eq 0|%
-        --?"[*[&CurrentToken]:t-statusmarkers]" -ninc advantage 
-            -and "[*[&CurrentToken]:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;[&CurrentToken];1d20;Normal
-        --?"[*[&CurrentToken]:t-statusmarkers]" -inc disadv|>MakeSavingThrow;[&CurrentToken];2d20kl1;Disadvantage
-        --?"[*[&CurrentToken]:t-statusmarkers]" -inc advantage|>MakeSavingThrow;[&CurrentToken];2d20kh1;Advantage
+  -->RollDamage|
+  --?"[*T:t-statusmarkers]" -ninc advantage -and "[*T:t-statusmarkers]" -ninc disadv|>MakeSavingThrow;1d20;Normal
+  --?"[*T:t-statusmarkers]" -inc disadv|>MakeSavingThrow;2d20kl1;Disadvantage
+  --?"[*T:t-statusmarkers]" -inc advantage|>MakeSavingThrow;2d20kh1;Advantage
         --?[$TargetSave] -ge [$SpellSaveDC]|>SetSaveBool;Succeeds
         --?[$TargetSave] -lt [$SpellSaveDC]|>SetSaveBool;Fails
-        --C[&SaveBool]|Fails:>CaseSaveFails;[&CurrentToken]|Succeeds:>CaseSaveSucceeds;[&CurrentToken]
-        -->ReportDamage|[&CurrentToken]
-        -->ApplyDamage|[&CurrentToken];1;-[$TotalDamage]
-        --*|[hr]
-    --%|
+  --C[&SaveBool]|Fails:>CaseSaveFails|Succeeds:>CaseSaveSucceeds
+  -->ReportDamage|
+  -->ApplyDamage|@{target|token_id};1;-[$TotalDamage]
     -->PlayEffects|
-    -->PlayEffectsB|
     --+|[br]
     --+|[rbutton]Show Description::OutputDescription[/rbutton]
     --X|
@@ -68,96 +52,10 @@
         --+Bonus Damage|[$AdditionalDamage]
     --<|
 
-    --:GetTargetDistance|
-        --~TargetDistance|distance;@{target|token_id};[%1%]
-        --~TargetDistanceRounded|math;round;[&TargetDistance]
-    --<|
-
-    --:GetTargetAngle|
-        --~TargetAngle|math;angle;@{target|token_id};[%1%]
-        --~TargetAngleRounded|math;round;[&TargetAngle]
-        --=RelativeAngle|[$TargetAngleRounded] - [$WallRotation] % 360
-        --?[$RelativeAngle] -lt 0|>InvertAngle
-    --<|
-
-    --:InvertAngle|
-        --=RelativeAngle|[$RelativeAngle] * -1
-    --<|
-
-    --:CheckForHits|
-        --/|%1%=TargetDistance, %2%=RelativeAngle, %3%=CharName
-        --?[%1%] -eq 6 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 77
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 6
-            -and [%2%] -gt 269
-            -and [%2%] -lt 283
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 5 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 75
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 5
-            -and [%2%] -gt 270
-            -and [%2%] -lt 285
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 4 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 71
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 4
-            -and [%2%] -gt 269
-            -and [%2%] -lt 289
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 3 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 71
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 3
-            -and [%2%] -gt 269
-            -and [%2%] -lt 293
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 2 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 60
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 2
-            -and [%2%] -gt 269
-            -and [%2%] -lt 301
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 1 
-            -and [%2%] -lt 91
-            -and [%2%] -gt 27
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 1
-            -and [%2%] -gt 269
-            -and [%2%] -lt 334
-            |>Hit;[%3%]
-
-        --?[%1%] -eq 0
-            |>Hit;[%3%]
-    --<|
-
-    --:Hit|
-        --&Hit|1
-    --<|
-
     --:MakeSavingThrow|
-        --=TargetSave|[%2%] + [*[%1%]:dexterity_save_bonus]
-        --*[*[%1%]:character_name]|[&SpellSaveType] Save [$TargetSave]
-        --*Roll|[%3%]
+    --=TargetSave|[%1%]+[$NPCSaveMod]
+    --*@{target|token_name}|[&SpellSaveType] Save [$TargetSave]
+    --*Roll|[%2%]
     --<|
 
     --:SetSaveBool|
@@ -168,18 +66,18 @@
         --*|Save Fails!
         --+|Creature Save Failed!
         -->CalculateDamage|[$Damage];Normal
-        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
-        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
-        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$DoubleDamage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$HalfDamage];Resistant!
+      --?"[*T:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
 
     --:CaseSaveSucceeds|
         --*|Save Suceeds!
         --+|Creature Save Succeeded!
         -->CalculateDamage|[$HalfDamage];Normal
-        --?"[*[%1%]:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
-        --?"[*[%1%]:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
-        --?"[*[%1%]:npc_immunities]" -inc [&DamageType]|>CalculateDamage;0;Immune!
+      --?"[*T:npc_vulnerabilities]" -inc [&DamageType]|>CalculateDamage;[$Damage];Vulnerable!
+      --?"[*T:npc_resistances]" -inc [&DamageType]|>CalculateDamage;[$QuarterDamage];Resistant!
+      --?"[*T:npc_immunities]"-inc [&DamageType]|>CalculateDamage;0;Immune!
     --<|
 
     --:CalculateDamage|
@@ -189,7 +87,7 @@
 
     --:ReportDamage|
         --*Resistance|[&CreatureResist]
-        --*|"[*[%1%]:character_name]"  takes [$TotalDamage] [&DamageType] Damage
+        --*|Creature takes [$TotalDamage] [&DamageType] Damage
     --<|
 
     --:ApplyDamage|
@@ -197,11 +95,7 @@
     --<|
 
     --:PlayEffects|
-        --vbetweentokens|@{selected|token_id} @{target|token_id} [&DamageFX]
-    --<|    
-
-    --:PlayEffectsB|
-        --vtoken|@{target|token_id} [&DamageFXB]
+    --vtoken|@{target|token_id} [&DamageFX]
     --<|  
     
     --:OutputDescription|
